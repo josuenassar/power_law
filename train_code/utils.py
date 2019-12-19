@@ -3,7 +3,6 @@ import numpy.random as npr
 import torch
 
 
-# TODO: Make to split any data set, doesn't only have to be mnist
 def get_data(dataset, cuda, batch_size,_seed, h0, data_dir):
     from ops.transformsParams import CIFAR10, SVHN
     from torchvision import datasets, transforms
@@ -50,14 +49,14 @@ def eigen_val_regulate(x, v, eigT=None, start=10, cuda=False):
     penalizes eigenvalues that stray too far away from a power law
     :param x: hidden representations, N by D
     :param v: eigenvectors, D by D (each column is an eigenvector!)
-    :param eigT: if the eigenspectra is already estimated, can just be passed in
+    :param eigT: if the eigenspectra is already estimated, can just be passed in, else it is default as None
     :param start: index that states what eigenvalues to start regulating.
     :return: value of regularizer and the estimated spectra
     """
     device = 'cuda' if cuda == True else 'cpu'
     if eigT is None:
         xt = x - torch.mean(x, 0)  # demean the data
-        cov = xt.transpose(1, 0) @ xt / x.shape[0]  # compute covariance matrix
+        cov = xt.transpose(1, 0) @ xt / (x.shape[0] - 1) # compute covariance matrix
         cov = (cov + cov.transpose(1, 0)) / 2
         eig = torch.diag(v.transpose(1, 0) @ cov @ v).to(device)
 
@@ -73,7 +72,7 @@ def eigen_val_regulate(x, v, eigT=None, start=10, cuda=False):
     for n in range(start + 1, eigs.shape[0]):
         if eigs[n] > 0:  # don't use negative eigenvalues
             regul += (eigs[n] / (alpha / (n + 1)) - 1) ** 2 + torch.relu(eigs[n] / (alpha / (n + 1)) - 1)
-    return eigs, regul
+    return eigs, regul / x.shape[0]
 
 
 def computeEigVectors(model, data, labels, lossFunction, alpha=0, cuda=False, online=False):
