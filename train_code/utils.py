@@ -116,8 +116,23 @@ def generate_adv_images(model, images, targets, lossFunc, eps=50, cuda=False, ra
     return advImages
 
 
-def compute_loss(model, imgs, labels, loss, alpha, cuda=False):
-    device = 'cuda' if cuda == True else 'cpu'
+def compute_loss(model, imgs, labels, loss, alpha_eig=0, alpha_adv=False, alpha_jacob=0, cuda=False, adversary=None):
+    """
+    Function that will compute the loss function PLUS any combination of the following three regularizers:
+    1) Eigenvalue regularization, 2) Adversarial training, 3) Jacobian regularization
+    :param model: model object
+    :param imgs: batch of images
+    :param labels: corresponding image labels
+    :param loss: loss function being used
+    :param alpha_eig: weight of the regularizer term on the spectra. If it is 0, don't compute
+    :param alpha_adv: boolean flag that will determine whether we should create a batch of images
+    :param alpha_jacob: weight of the regularizer term for the jacobian. If it is 0, don't compute.
+    :param cuda: Boolean flag that will determine whether we should use the GPU or not. It is assumed that the model is
+                 already on the chosen device, so data will be loaded on the specified device
+    :param adversary: An object that is in charge of computing the adversarial examples
+    :return: the value of the loss function and the value of the spectra and jacobian regularizer
+    """
+    device = 'cuda' if cuda  else 'cpu'
     "Compute a forward pass through the network and compute the loss"
     hidden, outputs = model.bothOutputs(imgs.to(device))  # feed data forward
     loss = loss(outputs, labels.to(device))  # compute loss
