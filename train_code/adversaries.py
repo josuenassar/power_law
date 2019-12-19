@@ -27,8 +27,8 @@ class Adversary(Trainer):
         elif training_type == 'FREE':
             raise NotImplementedError
 
-    def generateAdvImages(self, x_nat, y):
-        return self._gen_input(x_nat, y, self.network, self.loss)
+    def generate_adv_images(self, network, x_nat, y, loss):
+        return self._gen_input(x_nat, y, network, loss)
 
     def evaluate_training_loss(self, x,y):
         x_adv = self.generateAdvImages(x,y)
@@ -47,7 +47,7 @@ class Adversary(Trainer):
         ell = losses[idx]
         return x, ell
 
-    def pgd(self, x_nat, x, y, network, loss):
+    def pgd(self, network, x_nat, x, y, loss):
         """
         Perform projected gradient descent from Madry et al 2018
         :param x_nat: starting image
