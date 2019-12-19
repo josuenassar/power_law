@@ -1,46 +1,31 @@
 import numpy as np
 import numpy.random as npr
 import torch
+from torchvision import datasets, transforms
+from torchvision.transforms import Normalize
 
 
-def get_data(dataset, cuda, batch_size,_seed, h0, data_dir):
-    from ops.transformsParams import CIFAR10, SVHN
-    from torchvision import datasets, transforms
-    from ops.utils import SubsetSequentialSampler
-
-    kwargs = {'num_workers': 4,op 'pin_memory': True} if cuda else {}
-
+def get_data(dataset, batch_size, _seed, cuda=False, data_dir='../data/'):
+    kwargs = {'num_workers': 4, 'pin_memory': True} if cuda else {}
     if dataset == 'MNIST':
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
+        transform = Normalize((0.1307,), (0.3081,))
         train_set = datasets.MNIST(root=data_dir, train=True, download=True, transform=transform)
         test_set = datasets.MNIST(root=data_dir, train=False, download=True, transform=transform)
     elif dataset == 'CIFAR10':
-        transform_train, transform_eval = CIFAR10(h0)
-        train_set = datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform_train)
-        stats_set = datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform_eval)
-        test_set = datasets.CIFAR10(root=data_dir, train=False, download=True, transform=transform_eval)
+        train_set = datasets.CIFAR10(root=data_dir, train=True, download=True)
+        test_set = datasets.CIFAR10(root=data_dir, train=False, download=True)
     elif dataset == 'SVHN':
-        transform_train, transform_eval = SVHN(h0)
-        train_set = datasets.SVHN(root=data_dir, split='train', download=True,
-                                  transform=transform_train)
-        test_set = datasets.SVHN(root=data_dir, split='test', download=True,
-                                 transform=transform_eval)
-        stats_set = datasets.SVHN(root=data_dir, split='train', download=True,
-                                 transform=transform_eval)
+        train_set = datasets.SVHN(root=data_dir, split='train', download=True)
+        test_set = datasets.SVHN(root=data_dir, split='test', download=True)
 
     num_train = len(train_set)
     indices = list(range(num_train))
     np.random.seed(_seed)
     np.random.shuffle(indices)
     train_sampler = torch.utils.data.sampler.SubsetRandomSampler(indices)
-    stats_idx = np.array(indices)[np.random.choice(len(indices), 30)]
-    stats_idx = stats_idx.tolist()
-
-    stats_sampler = SubsetSequentialSampler(stats_idx)
     train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, sampler=train_sampler, **kwargs)
     test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, **kwargs)
-    stats_loader = torch.utils.data.DataLoader(stats_set, batch_size=30, sampler=stats_sampler)
-    return train_loader, test_loader, stats_loader
+    return train_loader, test_loader
 
 
 def eigen_val_regulate(x, v, eigT=None, start=10, cuda=False):
@@ -191,10 +176,8 @@ def compute_loss(model, imgs, labels, loss, eigen_vecs=None, alpha_spectra=0, al
     return total_loss, loss, spectra_regul, spectra, jacob_regul
 
 
-
 def clip(T, Tmin, Tmax):
     """
-
     :param T: input tensor
     :param Tmin: input tensor containing the minimal elements
     :param Tmax: input tensor containing the maximal elements
