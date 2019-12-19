@@ -75,7 +75,7 @@ def eigen_val_regulate(x, v, eigT=None, start=10, cuda=False):
     return eigs, regul / x.shape[0]
 
 
-def computeEigVectors(model, data, labels, lossFunction, alpha=0, cuda=False):
+def compute_eig_vectors(model, data, labels, lossFunction, alpha=0, cuda=False):
     device = 'cuda' if cuda == True else 'cpu'
     hidden, outputs = model.bothOutputs(data.to(device))
     loss = lossFunction(outputs, labels.to(device))
