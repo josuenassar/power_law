@@ -155,7 +155,7 @@ def compute_loss(model, imgs, labels, loss, eigen_vecs=None, alpha_spectra=0, al
     :param cuda: Boolean flag that will determine whether we should use the GPU or not. It is assumed that the model is
                  already on the chosen device, so data will be loaded on the specified device
     :param adversary: An object that is in charge of computing the adversarial examples
-    :param num_classes: Number of possible classes
+    :param num_classes: Number of possible classes, default is 10.
     :return: the value of the loss function and the value of the spectra and jacobian regularizer
     """
     device = 'cuda' if cuda else 'cpu'
@@ -190,31 +190,6 @@ def compute_loss(model, imgs, labels, loss, eigen_vecs=None, alpha_spectra=0, al
     total_loss = loss + alpha_spectra * spectra_regul + alpha_jacob * jacob_regul / imgs.shape[0]
     return total_loss, loss, spectra_regul, spectra, jacob_regul
 
-
-def split_mnist(pathLoad='../simple_regularization/data/mnist.npy', fracVal=0.2):
-    """
-    Generate training, test and validation set for MNIST
-    :param pathLoad: a string indicating where MNIST lives
-    :param fracVal: fraction of training set to use for validation
-    :return: 3 tuples, (trainData, trainLabels), (valData, valLabels), (testData, testLabels)
-    """
-    assert fracVal >= 0 and fracVal<=1
-    mnist_data = np.load(pathLoad, allow_pickle=True)[()]
-    trainData, trainLabels = mnist_data['train']  # training set
-    testData, testLabels = mnist_data['test']  # test set
-    numImgs = trainData.shape[0]
-    fracTrain = 1 - fracVal
-    if fracVal >= 0:
-        idx = npr.permutation(numImgs)
-        trainIdx = idx[:int(fracTrain * numImgs)]
-        valIdx = idx[int(fracTrain * numImgs):]
-
-        valData = trainData[valIdx, :]
-        valLabels = trainLabels[valIdx]
-
-        trainData = trainData[trainIdx, :]
-        trainLabels = trainLabels[trainIdx]
-    return (trainData, trainLabels), (valData, valLabels), (testData, testLabels)
 
 
 def clip(T, Tmin, Tmax):
