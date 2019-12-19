@@ -138,8 +138,9 @@ def generate_adv_images(model, images, targets, lossFunc, eps=50, cuda=False, ra
     return advImages
 
 
-# TODO: USe faster jacobian regularization from Hoffman et al
-def compute_loss(model, imgs, labels, loss, alpha_spectra=0, alpha_adv=False, alpha_jacob=0, cuda=False, adversary=None):
+# TODO: Use faster jacobian regularization from Hoffman et al
+def compute_loss(model, imgs, labels, loss, eigen_vecs=None, alpha_spectra=0, alpha_adv=False, alpha_jacob=0, cuda=False,
+                 adversary=None, num_classes=10):
     """
     Function that will compute the loss function PLUS any combination of the following three regularizers:
     1) Eigenvalue regularization, 2) Adversarial training, 3) Jacobian regularization
@@ -147,12 +148,14 @@ def compute_loss(model, imgs, labels, loss, alpha_spectra=0, alpha_adv=False, al
     :param imgs: batch of images
     :param labels: corresponding image labels
     :param loss: loss function being used
+    :param eigen_vecs: eigenvectors used for computing the spectra, default is None.
     :param alpha_spectra: weight of the regularizer term on the spectra. If it is 0, don't compute
     :param alpha_adv: boolean flag that will determine whether we should create a batch of images
     :param alpha_jacob: weight of the regularizer term for the jacobian. If it is 0, don't compute.
     :param cuda: Boolean flag that will determine whether we should use the GPU or not. It is assumed that the model is
                  already on the chosen device, so data will be loaded on the specified device
     :param adversary: An object that is in charge of computing the adversarial examples
+    :param num_classes: Number of possible classes
     :return: the value of the loss function and the value of the spectra and jacobian regularizer
     """
     device = 'cuda' if cuda else 'cpu'
@@ -165,23 +168,26 @@ def compute_loss(model, imgs, labels, loss, alpha_spectra=0, alpha_adv=False, al
     hidden, outputs = model.bothOutputs(imgs.to(device))  # feed data forward
     loss = loss(outputs, labels.to(device))  # compute loss
 
-    "Compute regularizer"
+    "Compute spectra regularizer"
     spectra_regul = torch.zeros(1, device=device)
     spectra_temp = []
     if alpha_spectra > 0:
         for idx in range(len(hidden)):
             spectra, rTemp = eigen_val_regulate(hidden[idx],
-                                                model.eigVec[idx], cuda=cuda)  # compute spectra for each hidden layer
+                                                eigen_vecs, cuda=cuda)  # compute spectra for each hidden layer
             with torch.no_grad():
                 spectra_temp.append(spectra)
             spectra_regul += rTemp
 
+    "Compute jacobian regularizer"
     jacob_regul = torch.zeros(1, device=device)
     if alpha_jacob > 0:
-        jacobian = get_jacobian(model, imgs, labels, loss, cuda)  # get input-output jacobian
-        jacob_regul = torch.mean(jacobian ** 2)  # take frobenius norm of input-output jacobian divided by size of jacobian
+        temp = torch.ones(loss.shape[0], loss.shape[1], device=device)
+        for k in range(num_classes):
+            jacobian = get_jacobian(model, imgs, k * temp, loss, cuda)  # get input-output jacobian for class k
+            jacob_regul += torch.sum(jacobian ** 2)  # take frobenius norm of input-output jacobian
 
-    total_loss = loss + alpha_spectra * spectra_regul + alpha_jacob * jacob_regul
+    total_loss = loss + alpha_spectra * spectra_regul + alpha_jacob * jacob_regul / imgs.shape[0]
     return total_loss, loss, spectra_regul, spectra, jacob_regul
 
 
