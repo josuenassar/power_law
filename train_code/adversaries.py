@@ -30,9 +30,9 @@ class Adversary(Trainer):
     def generate_adv_images(self, network, x_nat, y, loss):
         return self._gen_input(x_nat, y, network, loss)
 
-    def evaluate_training_loss(self, x,y):
-        x_adv = self.generateAdvImages(x,y)
-        return self.evaluate_loss(x_adv,y)
+    def evaluate_training_loss(self, x, y):
+        x_adv = self.generateAdvImages(x, y)
+        return self.evaluate_loss(x_adv, y)
 
     def pgd_loop(self, network, x_nat, y, loss):
         losses = torch.zeros(self.noRestarts)
