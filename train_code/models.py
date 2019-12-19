@@ -44,7 +44,7 @@ class MLP(ModelArchitecture):
                 modules.append(nn.BatchNorm1d(dims[idx][1]))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
-        self.eigVec = [None] * len(dims[:-1])
+        # self.eigVec = [None] * len(dims[:-1])
 
     def forward(self, x):
         return self.sequential(x)
@@ -103,7 +103,7 @@ class CNN(ModelArchitecture):
                 linModules.append(nn.BatchNorm1d(dims[idx][1]))
         linModules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.linSequential = nn.Sequential(*linModules)
-        self.eigVec = [None] * (len(dims) - 1)  # eigenvectors for all hidden layers
+        # self.eigVec = [None] * (len(dims) - 1)  # eigenvectors for all hidden layers
 
     def forward(self, x):
         xT = x.view(x.shape[0], 1, 28, 28)
