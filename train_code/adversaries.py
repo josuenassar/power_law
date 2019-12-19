@@ -3,6 +3,8 @@ import utils
 import copy
 from types_of_training import Trainer
 
+# TODO: Choose to use either l infinity or l2
+
 
 class Adversary(Trainer):
     "Class that will be in charge of generating batches of adversarial images"
