@@ -119,7 +119,7 @@ def get_jacobian(net, x, target, loss, cuda=False):
     return x.grad.data.squeeze(), ell.item()
 
 
-def generate_adv_images(model, images, targets, lossFunc, eps=50, cuda=False, rand=True):
+def generate_adv_images(model, images, targets, lossFunc, eps=50, cuda=False, rand=False):
     """
     Given images, targets and a model will create adversarial images
     :param model: neural network class
