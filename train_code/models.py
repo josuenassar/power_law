@@ -2,16 +2,16 @@ import torch
 import torch.nn as nn
 import abc
 from torch.nn import CrossEntropyLoss
+import math
 
 # TODO: Change weight initalization
+
 
 # PETER WAS HERE#
 class ModelArchitecture(nn.Module):
     def __init__(self, regularizer=False, adversary=False):
         super(ModelArchitecture, self).__init__()
         self.loss = CrossEntropyLoss()
-        self.regularizer = regularizer
-        self.adversary = adversary
     @abc.abstractmethod
     def forward(self):
         raise NotImplementedError
@@ -23,14 +23,15 @@ class ModelArchitecture(nn.Module):
 
 class MLP(ModelArchitecture):
     # Multilayer perceptron with a variable amount of hidden layers
-    def __init__(self, dims, activation='relu', bn=False, regularizer=False, adversary=False):
+    def __init__(self, dims, activation='relu', bn=True):
         """
         Constructor for MLP with a variable number of hidden layers
         :param dims: A list of N tuples where the first N -1 determine the N - 1 hidden layers and the last tuple
         determines the output layer
         :param activation: a string that determines which activation layer to use. The default is relu
+        :param bn: flag that determines whether we should use batch normalization, default value is True
         """
-        super().__init__(regularizer, adversary)
+        super().__init__()
         self.numHiddenLayers = len(dims[:-1])  # number of hidden layers in the network
         self.bn = bn
         modules = []
@@ -44,7 +45,7 @@ class MLP(ModelArchitecture):
                 modules.append(nn.BatchNorm1d(dims[idx][1]))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
-        # self.eigVec = [None] * len(dims[:-1])
+        self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
 
     def forward(self, x):
         return self.sequential(x)
@@ -67,28 +68,35 @@ class MLP(ModelArchitecture):
 
 class CNN(ModelArchitecture):
     # CNN architecture with a variable number of convolutional layers and a variable number of fully connected layers
-    def __init__(self, dims, activation='relu', bn=False, regularizer=False, adversary=False):
+    def __init__(self, dims, activation='relu', bn=True, h_in=28, w_in=28):
         """
         Constructor for CNN
         :param dims: A list of N tuples where the first element states how many convolutional layers to use
         are defined as (# input channels, kernel size, # output channels)
         :param activation: a string that determines which activation layer to use. The default is relu
+        :param bn: flag that determines whether we should use batch normalization, default value is True
+        :param h_in: Height of input image, default value is 28.
+        :param w_in: Width of input image, default value is 28.
         """
-        super().__init__(regularizer, adversary)
+        super().__init__()
         self.numConvLayers = dims[0]
         dims = dims[1:]
         self.bn = bn
         self.numHiddenLayers = len(dims) - 1  # number of hidden layers in the network
+        self.max_neurons = 0
 
         # Construct convolutional layers
         convModules = []
         for idx in range(self.numConvLayers):
-            convModules.append(nn.Conv2d(dims[idx][0], dims[idx][-1], kernel_size=(5, 5)))
+            convModules.append(nn.Conv2d(dims[idx][0], dims[idx][-1], kernel_size=(dims[idx][1], dims[idx][1])))
             if activation == 'relu':
                 convModules.append(nn.ReLU())
             else:
                 convModules.append(nn.Tanh())
             convModules.append(nn.MaxPool2d(kernel_size=(2, 2), stride=2))
+            h_in = math.floor((h_in - dims[idx][1] - 1) / 2)
+            w_in = math.floor((w_in - dims[idx][1] - 1) / 2)
+            self.max_neurons = max([self.max_neurons, h_in * w_in * dims[idx][-1]])
         self.convSequential = nn.Sequential(*convModules)  # convolution layers
 
         # Construct fully connected layers
@@ -101,9 +109,9 @@ class CNN(ModelArchitecture):
                 linModules.append(nn.Tanh())
             if bn:
                 linModules.append(nn.BatchNorm1d(dims[idx][1]))
+            self.max_neurons = max([self.max_neurons, dims[idx][1]])
         linModules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.linSequential = nn.Sequential(*linModules)
-        # self.eigVec = [None] * (len(dims) - 1)  # eigenvectors for all hidden layers
 
     def forward(self, x):
         xT = x.view(x.shape[0], 1, 28, 28)
