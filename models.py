@@ -194,6 +194,7 @@ class Trainer(nn.Module):
         self._architecture = decoratee
         self._save_name = save_name
         self.max_iter = max_iter
+        self.no_minibatches = 0
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'sgd':
@@ -582,19 +583,15 @@ def ModelFactory(**kwargs):
 
 
 class TestModel(unittest.TestCase):
-    def setUp(self):
-        pass
 
-    def test_assert(self):
-        kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
-             "trainer": "vanilla", "regularizer": "no"}
-        model = ModelFactory(**kwargs)
-        self.assertIsInstance(model, Regularizer)
-
-    def test_forward(self):
+    @staticmethod
+    def create_model():
         kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
                   "trainer": "vanilla", "regularizer": "no"}
-        model = ModelFactory(**kwargs)
+        return ModelFactory(**kwargs)
+
+    @staticmethod
+    def load_data():
         from torchvision import datasets, transforms
         kwargs = {'num_workers': 4, 'pin_memory': True}
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
@@ -607,19 +604,43 @@ class TestModel(unittest.TestCase):
         train_loader = torch.utils.data.DataLoader(train_set, batch_size=100, sampler=train_sampler,
                                                    **kwargs)
         test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, **kwargs)
+        return train_loader, test_loader
 
-        x,y = next(iter(train_loader))
-        # import pdb; pdb.set_trace()
+    def test_assert(self):
+        model = self.create_model()
+        self.assertIsInstance(model, Regularizer)
+
+    def test_forward(self):
+        model = self.create_model()
+        train_loader, test_loader = self.load_data()
+        x, y = next(iter(train_loader))
         yhat = model(x)
         loss = model.loss(yhat, y)
         self.assertIsNotNone(loss)
 
     def test_parameters(self):
-        kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
-                  "trainer": "vanilla", "regularizer": "no"}
-        model = ModelFactory(**kwargs)
-        import pdb; pdb.set_trace()
+        model = self.create_model()
         model.parameters()
+        cnt = 0
+        for param in model.parameters():
+            cnt += param.numel()
+        self.assertEqual(28**2*1000+1000+1000*10+10, cnt)
+
+    def test_train_batch(self):
+        model = self.create_model()
+        train_loader, test_loader = self.load_data()
+
+        x,y = next(iter(train_loader))
+        # import pdb; pdb.set_trace()
+        L_pre, _ = model.evaluate_training_loss(x,y)
+        model.train_batch(x,y)
+        L_post, _ = model.evaluate_training_loss(x,y)
+        self.assertLessEqual(L_post.item(), L_pre.item())
+
+    def test_train_epoch(self):
+        model = self.create_model()
+        train_loader, test_loader = self.load_data()
+        model.train_epoch(train_loader)
 
 
 if __name__ == '__main__':
