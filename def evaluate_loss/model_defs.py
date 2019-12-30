@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.optim import Adam, SGD, rmsprop
 import numpy as np
 import inspect
 from functools import wraps
@@ -188,11 +189,19 @@ class CNN(ModelArchitecture):
 
 class Trainer(nn.Module):
 
-    def __init__(self, *, decoratee, save_name=None, max_iter=100_000):
+    def __init__(self, *, decoratee, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3, weight_decay=1e-5):
         super(Trainer, self).__init__()
         self._architecture = decoratee
         self._save_name = save_name
         self.max_iter = max_iter
+        if optimizer.lower() == 'adam':
+            self.optimizer = Adam(params=self.parameters(), lr=lr, weight_decay=weight_decay)
+        elif optimizer.lower() == 'sgd':
+            self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
+        elif optimizer.lower() == 'rms':
+            self.optimizer = rmsprop(params=self.parameters(), lr=lr, weight_decay=weight_decay)
+        else:
+            print('WOAH THERE BUDDY, THAT ISNT AN OPTION')
 
     def forward(self, x):
         return self._architecture(x)
