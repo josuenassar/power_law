@@ -529,9 +529,10 @@ class EigenvalueRegularization(Regularizer):
             self.trainSpectra.append(spectraTemp)  # store computed eigenspectra
             self.trainLoss.append(loss.cpu().item())  # store training loss
             self.trainRegularizer.append(self.omega * regul)  # store value of regularizer
-
+            self.eig_T = None
         for _, x, y in enumerate(tqdm(X)):
-            self.train_batch(x, y)
+            self.evaluate_training_loss(x, y)
+            # self.train_batch(x, y)
 
     @staticmethod
     def estimate_slope(x, y):
