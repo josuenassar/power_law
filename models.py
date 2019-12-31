@@ -229,7 +229,7 @@ class Trainer(nn.Module):
         :return: returns a generator with the function evals for each batch
         """
         for _, (x, y) in enumerate(tqdm(X)):
-            yield function(x, y)
+            function(x, y)
 
     def train_epoch(self, X: DataLoader):
         self.evaluate_dataset(X, function=self.train_batch)
@@ -631,7 +631,6 @@ class TestModel(unittest.TestCase):
         train_loader, test_loader = self.load_data()
 
         x,y = next(iter(train_loader))
-        # import pdb; pdb.set_trace()
         L_pre, _ = model.evaluate_training_loss(x,y)
         model.train_batch(x,y)
         L_post, _ = model.evaluate_training_loss(x,y)
