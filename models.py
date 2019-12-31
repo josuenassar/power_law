@@ -334,8 +334,10 @@ class AdversarialTraining(Trainer):
     def evaluate_training_loss(self, x, y):
         # overwrites method in trainer
         x_adv = self.generate_adv_images(x, y)
+        x_new = torch.cat((x, x_adv), 0)
+        y_new = torch.cat((y, y), 0)
         # TODO concatenate x and x_adv and duplicate y
-        return super(self).evaluate_training_loss(x, y)
+        return super(self).evaluate_training_loss(x_new, y_new)
 
     def pgd_loop(self, x_nat, y):
         losses = torch.zeros(self.noRestarts)
