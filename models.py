@@ -334,8 +334,9 @@ class AdversarialTraining(Trainer):
     def evaluate_training_loss(self, x, y):
         # overwrites method in trainer
         x_adv = self.generate_adv_images(x, y)
-        # TODO concatenate x and x_adv and duplicate y
-        return super(self).evaluate_training_loss(x, y)
+        x_new = torch.cat((x, x_adv), 0)
+        y_new = torch.cat((y, y), 0)
+        return super(self).evaluate_training_loss(x_new, y_new)
 
     def pgd_loop(self, x_nat, y):
         losses = torch.zeros(self.noRestarts)
@@ -528,9 +529,10 @@ class EigenvalueRegularization(Regularizer):
             self.trainSpectra.append(spectraTemp)  # store computed eigenspectra
             self.trainLoss.append(loss.cpu().item())  # store training loss
             self.trainRegularizer.append(self.omega * regul)  # store value of regularizer
-
+            self.eig_T = None
         for _, x, y in enumerate(tqdm(X)):
-            self.train_batch(x, y)
+            self.evaluate_training_loss(x, y)
+            # self.train_batch(x, y)
 
     @staticmethod
     def estimate_slope(x, y):
