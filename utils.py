@@ -153,12 +153,18 @@ class JacobianReg(nn.Module):
 
     @staticmethod
     def _jacobian_vector_product(y, x, v, create_graph=False):
-        '''
+        """
         Produce jacobian-vector product dy/dx dot v.
 
         Note that if you want to differentiate it,
         you need to make create_graph=True
-        '''
+        :param y:
+        :param x:
+        :param v:
+        :param create_graph:
+        :return:
+        """
+
         flat_y = y.reshape(-1)
         flat_v = v.reshape(-1)
         grad_x, = torch.autograd.grad(flat_y, x, flat_v,

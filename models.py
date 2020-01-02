@@ -214,7 +214,7 @@ class Trainer(nn.Module):
         if self.no_minibatches > self.max_iter:
             return
         else:
-            loss, _ = self.evaluate_training_loss(x, y)  #TODO
+            loss = self.evaluate_training_loss(x, y)
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
@@ -223,7 +223,6 @@ class Trainer(nn.Module):
     @staticmethod
     def evaluate_dataset(X: DataLoader, *, function: Callable):
         """
-        Creates a generator that evaluates some function over the entire dataset
         Function could for instance be evaluate_batch  *but* could be something more general
         :param X: a PyTorch data loader
         :param function: a callable function that will be evaluated on the entire dataset specified in the DataLoader X
@@ -233,12 +232,22 @@ class Trainer(nn.Module):
         for _, (x, y) in enumerate(tqdm(X)):
             function(x, y)
 
+    def evaluate_dataset_test_loss(self, X: DataLoader):
+        loss = 0
+        mce = 0
+        with torch.no_grad():
+            for _, (x,y) in enumerate(tqdm(X)):
+                loss_tmp, mce_tmp = self.evaluate_test_loss(x,y)
+                loss += loss_tmp
+                mce += mce_tmp
+        return loss/len(X), mce/len(X)
+
     def train_epoch(self, X: DataLoader):
         self.evaluate_dataset(X, function=self.train_batch)
 
     def evaluate_training_loss(self, x, y):
-        h, x = self.bothOutputs(x)
-        return self.loss(x, y), h
+        h, y_hat = self.bothOutputs(x)
+        return self.loss(y_hat, y)
 
     def evaluate_test_loss(self, x, y):
         y_hat = self.forward(x)
@@ -253,7 +262,7 @@ class Trainer(nn.Module):
         :return: torch.float  fraction of misclassified examples
         """
         _, predicted = torch.max(y_hat, 1)
-        return (predicted == y.data).float().mean()
+        return (predicted != y.data).float().mean()
 
     def test(self, X: DataLoader):
         return self.evaluate_dataset(X, function=self.evaluate_test_loss)
@@ -425,6 +434,7 @@ class JacobianRegularization(Regularizer):
         self.JacobianReg = JacobianReg(n=n)
 
     def evaluate_training_loss(self, x, y):
+        x.requires_grad = True  # this is essential!
         y_hat = self(x)
         loss = self.loss(y_hat, y)
 
@@ -452,8 +462,8 @@ class EigenvalueRegularization(Regularizer):
 
 # overwrites method in trainer
     def evaluate_training_loss(self, x, y):
-        hidden, outputs = self.bothOutputs(x.to(self.device))  # feed data forward
-        loss = self.loss(outputs, y.to(self.device))  # compute loss
+        hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
+        loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
         "Compute spectra regularizer"
         spectra_regul = torch.zeros(1, device=self.device)
@@ -530,9 +540,8 @@ class EigenvalueRegularization(Regularizer):
             self.trainLoss.append(loss.cpu().item())  # store training loss
             self.trainRegularizer.append(self.omega * regul)  # store value of regularizer
             self.eig_T = None
-        for _, x, y in enumerate(tqdm(X)):
-            self.evaluate_training_loss(x, y)
-            # self.train_batch(x, y)
+        for _, (x, y) in enumerate(tqdm(X)):
+            self.train_batch(x, y)
 
     @staticmethod
     def estimate_slope(x, y):
@@ -555,8 +564,8 @@ class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegu
 
     # overwrites method in trainer
     def evaluate_training_loss(self, x, y):
-        hidden, outputs = self.bothOutputs(x.to(self.device))  # feed data forward
-        loss = self.loss(outputs, y.to(self.device))  # compute loss
+        hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
+        loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
         # Compute spectra regularizer
         spectra_regul = torch.zeros(1, device=self.device)
@@ -634,16 +643,19 @@ class TestModel(unittest.TestCase):
         train_loader, test_loader = self.load_data()
 
         x,y = next(iter(train_loader))
-        L_pre, _ = model.evaluate_training_loss(x,y)
+        L_pre = model.evaluate_training_loss(x,y)
         model.train_batch(x,y)
-        L_post, _ = model.evaluate_training_loss(x,y)
-        self.assertLessEqual(L_post.item(), L_pre.item())
+        L_post = model.evaluate_training_loss(x,y)
+        self.assertLess(L_post.item(), L_pre.item())
 
     def test_train_epoch(self):
         model = self.create_model()
         train_loader, test_loader = self.load_data()
+        L_pre, mce_pre = model.evaluate_dataset_test_loss(test_loader)
         model.train_epoch(train_loader)
-
+        L_post, mce_post = model.evaluate_dataset_test_loss(test_loader)
+        self.assertLess(L_post.item(), L_pre.item())
+        self.assertLess(mce_post.item(), mce_pre.item())
 
 if __name__ == '__main__':
     unittest.main()
