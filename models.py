@@ -15,6 +15,8 @@ import os
 
 from torch.utils.data.dataloader import DataLoader
 from torch import save
+from utils import JacobianReg
+
 # TODO: Change weight initalization
 
 
@@ -370,7 +372,7 @@ class AdversarialTraining(Trainer):
         return x, ell.item()
 
     def FGSM(self, x_nat, y):
-        jacobian, ell = self.get_jacobina(x_nat, y)  # get jacobian
+        jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
         return x_nat + self.eps * torch.sign(jacobian), ell
 
     @staticmethod
@@ -417,28 +419,25 @@ class NoRegularization(Regularizer):
 
 class JacobianRegularization(Regularizer):
 
-    def __init__(self, *, decoratee: Union[Regularizer, Trainer], alpha_jacob):
+    def __init__(self, *, decoratee: Union[Regularizer, Trainer], alpha_jacob, n=-1):
         super(JacobianRegularization, self).__init__(decoratee=decoratee)
         self.alpha_jacob = alpha_jacob
+        self.JacobianReg = JacobianReg(n=n)
 
     def evaluate_training_loss(self, x, y):
-        loss = self.loss(self(x), y)
+        y_hat = self(x)
+        loss = self.loss(y_hat, y)
 
-        return loss + self.alpha_jacob * self.loss_regularizer(x, loss)
+        return loss + self.alpha_jacob * self.loss_regularizer(x, y_hat)
 
-    def loss_regularizer(self, x, loss):
-        jacob_regul = torch.zeros(1, device=self.device)
-        temp = torch.ones(loss.shape[0], loss.shape[1], device=self.device)
-        for k in range(self.num_classes):
-            jacobian = self.get_jacobian(x, k * temp, loss)  # get input-output jacobian for
-            # class k
-            jacob_regul += torch.sum(jacobian ** 2)  # take frobenius norm of input-output jacobian
-        return jacob_regul
+    def loss_regularizer(self, x, y_hat):
+        return self.JacobianReg(x, y_hat)
 
 
 class EigenvalueRegularization(Regularizer):
 
     def __init__(self, decoratee: Union[Regularizer, Trainer], *, alpha_spectra):
+        # import pdb; pdb.set_trace()
         super(EigenvalueRegularization, self).__init__(decoratee=decoratee)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
@@ -449,6 +448,7 @@ class EigenvalueRegularization(Regularizer):
         self.eig_T = None
         self.alpha_spectra = alpha_spectra
         self.eig_start = 10
+        self.EigDataLoader = None
 
 # overwrites method in trainer
     def evaluate_training_loss(self, x, y):
@@ -550,14 +550,15 @@ class EigenvalueRegularization(Regularizer):
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
 
     def __init__(self, decoratee: Union[Regularizer, Trainer], *, alpha_spectra, alpha_jacob):
-        super().__init__(decoratee=decoratee, alpha_spectra=alpha_spectra, alpha_jacob=alpha_jacob)
+        EigenvalueRegularization.__init__(self, decoratee=decoratee, alpha_spectra=alpha_spectra)
+        JacobianRegularization.__init__(self, decoratee=decoratee, alpha_jacob=alpha_jacob)
 
     # overwrites method in trainer
     def evaluate_training_loss(self, x, y):
         hidden, outputs = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(outputs, y.to(self.device))  # compute loss
 
-        #"Compute spectra regularizer"
+        # Compute spectra regularizer
         spectra_regul = torch.zeros(1, device=self.device)
         spectra_temp = []
         for idx in range(len(hidden)):
@@ -589,7 +590,7 @@ class TestModel(unittest.TestCase):
     @staticmethod
     def create_model():
         kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
-                  "trainer": "vanilla", "regularizer": "no"}
+                  "trainer": "vanilla", "regularizer": "jac", "alpha_spectra": 1, "alpha_jacob": 1}
         return ModelFactory(**kwargs)
 
     @staticmethod
@@ -597,8 +598,8 @@ class TestModel(unittest.TestCase):
         from torchvision import datasets, transforms
         kwargs = {'num_workers': 4, 'pin_memory': True}
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-        train_set = datasets.MNIST(root=os.getcwd(),train=True, download=True, transform=transform)
-        test_set = datasets.MNIST(root=os.getcwd(),train=False, download=True, transform=transform)
+        train_set = datasets.MNIST(root=os.getcwd(), train=True, download=True, transform=transform)
+        test_set = datasets.MNIST(root=os.getcwd(), train=False, download=True, transform=transform)
         num_train = len(train_set)
         indices = list(range(num_train))
         train_sampler = torch.utils.data.sampler.SubsetRandomSampler(indices)
