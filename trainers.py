@@ -229,14 +229,10 @@ class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
         self.JacobianReg = JacobianReg(n=n)
 
     "Overwrites method in trainer"
-
     def evaluate_training_loss(self, x, y):
         x, y = self.prepare_batch(x, y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
-
-
-
         "Compute jacobian regularization"
         x.requires_grad = True  # this is essential!
         return loss + self.alpha_spectra * self.spectra_regularizer(hidden) + self.alpha_jacob * \
