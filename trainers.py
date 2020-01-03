@@ -48,16 +48,16 @@ class Trainer(nn.Module):
             return loss
 
     @staticmethod
-    def evaluate_dataset(X: DataLoader, *, function: Callable):
-        """
-        Function could for instance be evaluate_batch  *but* could be something more general
-        :param X: a PyTorch data loader
-        :param function: a callable function that will be evaluated on the entire dataset specified in the DataLoader X
-        to wit: function requires two parameters the input x and target y
-        :return: returns a generator with the function evals for each batch
-        """
-        for _, (x, y) in enumerate(tqdm(X)):
-            function(x, y)
+    # def evaluate_dataset(X: DataLoader, *, function: Callable):
+    #     """
+    #     Function could for instance be evaluate_batch  *but* could be something more general
+    #     :param X: a PyTorch data loader
+    #     :param function: a callable function that will be evaluated on the entire dataset specified in the DataLoader X
+    #     to wit: function requires two parameters the input x and target y
+    #     :return: returns a generator with the function evals for each batch
+    #     """
+    #     for _, (x, y) in enumerate(tqdm(X)):
+    #         function(x, y)
 
     def evaluate_dataset_test_loss(self, X: DataLoader):
         loss = 0
@@ -69,17 +69,18 @@ class Trainer(nn.Module):
                 mce += mce_tmp
         return loss/len(X), mce/len(X)
 
-    def train_epoch(self, X: DataLoader):
-        self.evaluate_dataset(X, function=self.train_batch)
+    # def train_epoch(self, X: DataLoader):
+    #     self.evaluate_dataset(X, function=self.train_batch)
 
     def evaluate_training_loss(self, x, y):
         x, y = self._batch_modifier.prepare_batch(x, y)
         h, y_hat = self._batch_modifier._architecture.bothOutputs(x)
+        # return self.loss(y_hat, y)
         return self.loss(y_hat, y)
 
     def evaluate_test_loss(self, x, y):
         y_hat = self.forward(x)
-        return self.loss(y_hat, y), self.compute_mce(y_hat, y)
+        return self._batch_modifier._architecture.loss(y_hat, y), self.compute_mce(y_hat, y)
 
     @staticmethod
     def compute_mce(y_hat, y):
