@@ -9,44 +9,6 @@ import torch.autograd as autograd
 import inspect
 from functools import wraps
 
-# def get_data(dataset, cuda, batch_size,_seed, h0, data_dir):
-    # from ops.transformsParams import CIFAR10, SVHN
-    # from torchvision import datasets, transforms
-    # from ops.utils import SubsetSequentialSampler
-    #
-    # kwargs = {'num_workers': 4,op 'pin_memory': True} if cuda else {}
-    #
-    # if dataset == 'MNIST':
-    #     transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-    #     train_set = datasets.MNIST(root=data_dir, train=True, download=True, transform=transform)
-    #     test_set = datasets.MNIST(root=data_dir, train=False, download=True, transform=transform)
-    # elif dataset == 'CIFAR10':
-    #     transform_train, transform_eval = CIFAR10(h0)
-    #     train_set = datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform_train)
-    #     stats_set = datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform_eval)
-    #     test_set = datasets.CIFAR10(root=data_dir, train=False, download=True, transform=transform_eval)
-    # elif dataset == 'SVHN':
-    #     transform_train, transform_eval = SVHN(h0)
-    #     train_set = datasets.SVHN(root=data_dir, split='train', download=True,
-    #                               transform=transform_train)
-    #     test_set = datasets.SVHN(root=data_dir, split='test', download=True,
-    #                              transform=transform_eval)
-    #     stats_set = datasets.SVHN(root=data_dir, split='train', download=True,
-    #                              transform=transform_eval)
-    #
-    # num_train = len(train_set)
-    # indices = list(range(num_train))
-    # np.random.seed(_seed)
-    # np.random.shuffle(indices)
-    # train_sampler = torch.utils.data.sampler.SubsetRandomSampler(indices)
-    # stats_idx = np.array(indices)[np.random.choice(len(indices), 30)]
-    # stats_idx = stats_idx.tolist()
-    #
-    # stats_sampler = SubsetSequentialSampler(stats_idx)
-    # train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, sampler=train_sampler, **kwargs)
-    # test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, **kwargs)
-    # stats_loader = torch.utils.data.DataLoader(stats_set, batch_size=30, sampler=stats_sampler)
-    # return train_loader, test_loader, stats_loader
 
 def clip(T, Tmin, Tmax):
     """
@@ -195,3 +157,57 @@ def counter(func):
         self.no_minibatches += 1
         return output
     return wrapper
+
+
+def compute_eig_vectors(x, y, model, loss, device):
+    hidden, outputs = model.bothOutputs(x.to(device))
+    loss = loss(outputs, y.to(device))
+    spectraTemp = []
+    eigVec = []
+    regul = torch.zeros(1, device=device)
+
+    for idx in range(len(hidden)):
+        hTemp = hidden[idx] - torch.mean(hidden[idx], 0)
+        cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
+        cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
+        cov = (cov + cov.transpose(1, 0)) / 2
+        _, eigTemp, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+        eig_T = eigTemp.float()
+        vecTemp = vecTemp.float()
+        eigTemp, rT = eigen_val_regulate(0, 0, eig_T, device)  # compute regularizer
+        regul += rT
+        spectraTemp.append(eigTemp.cpu())  # save spectra
+        eigVec.append(vecTemp)
+
+    return eigVec, loss, spectraTemp, regul.cpu().item()
+
+
+def eigen_val_regulate(x, v, eigT, start=10, device='cpu'):
+    """
+    Function that approximates the eigenvalues of the matrix x, by finding them wrt some pseudo eigenvectors v and then
+    penalizes eigenvalues that stray too far away from a power law
+    :param x: hidden representations, N by D
+    :param v: eigenvectors, D by D (each column is an eigenvector!)
+    :param eigT: if the eigenspectra is already estimated, can just be passed in, else it is default as None
+    :param start: index that states what eigenvalues to start regulating.
+    :return: value of regularizer and the estimated spectra
+    """
+    if eigT is None:
+        xt = x - torch.mean(x, 0)  # demean the data
+        cov = xt.transpose(1, 0) @ xt / (x.shape[0] - 1)  # compute covariance matrix
+        cov = (cov + cov.transpose(1, 0)) / 2
+        eig = torch.diag(v.transpose(1, 0) @ cov @ v).to(device)
+
+    else:
+        eig = eigT
+
+    eigs = torch.sort(eig, descending=True)[0]
+    regul = torch.zeros(1, device=device)
+    # slope = -1
+    with torch.no_grad():
+        alpha = eigs[start] * (start + 1)  # let the the constant be the largest eigenvalue
+
+    for n in range(start + 1, eigs.shape[0]):
+        if eigs[n] > 0:  # don't use negative eigenvalues
+            regul += (eigs[n] / (alpha / (n + 1)) - 1) ** 2 + torch.relu(eigs[n] / (alpha / (n + 1)) - 1)
+    return eigs, regul / x.shape[0]
