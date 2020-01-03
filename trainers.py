@@ -195,8 +195,11 @@ class EigenvalueRegularization(Trainer):
             spectra_regul += rTemp
         return spectra_regul
 
-    def train_epoch(self, X: DataLoader):
-        raise NotImplementedError
+    def train_epoch(self, X: DataLoader, X_full, Y_full):
+        _, _, _, _ = self.compute_eig_vectors(X_full, Y_full)
+        for _, (x, y) in enumerate(tqdm(X)):
+            self.train_batch(x, y)
+        # raise NotImplementedError
 
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
