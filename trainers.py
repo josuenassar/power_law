@@ -1,11 +1,9 @@
 import torch
 import torch.nn as nn
 from torch.optim import Adam, SGD, rmsprop
-import numpy as np
 from copy import deepcopy
 from uuid import uuid4
 from tqdm import tqdm
-from typing import Callable
 from torch.utils.data.dataloader import DataLoader
 from torch import save
 from utils import JacobianReg, counter, compute_eig_vectors, eigen_val_regulate
@@ -20,10 +18,8 @@ class Trainer(nn.Module):
         self._save_name = save_name
         self.max_iter = max_iter
         self.no_minibatches = 0
-        # self.loss = self._batch_modifier._architecture.loss
-        # self.bothOutputs = self._batch_modifier._architecture.bothOutputs
         if optimizer.lower() == 'adam':
-            self.optimizer = Adam(params=self._batch_modifier._architecture.parameters(),
+            self.optimizer = Adam(params=self.parameters(),
                                   lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'sgd':
             self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
@@ -50,18 +46,6 @@ class Trainer(nn.Module):
             self.optimizer.step()
             return loss
 
-    # @staticmethod
-    # def evaluate_dataset(X: DataLoader, *, function: Callable):
-    #     """
-    #     Function could for instance be evaluate_batch  *but* could be something more general
-    #     :param X: a PyTorch data loader
-    #     :param function: a callable function that will be evaluated on the entire dataset specified in the DataLoader X
-    #     to wit: function requires two parameters the input x and target y
-    #     :return: returns a generator with the function evals for each batch
-    #     """
-    #     for _, (x, y) in enumerate(tqdm(X)):
-    #         function(x, y)
-
     def evaluate_dataset_test_loss(self, X: DataLoader):
         loss = 0
         mce = 0
@@ -72,12 +56,8 @@ class Trainer(nn.Module):
                 mce += mce_tmp
         return loss/len(X), mce/len(X)
 
-    # def train_epoch(self, X: DataLoader):
-    #     self.evaluate_dataset(X, function=self.train_batch)
-
     def evaluate_training_loss(self, x, y):
-        x, y = self._batch_modifier.prepare_batch(x, y)
-        # h, y_hat = self._batch_modifier._architecture.bothOutputs(x)
+        x, y = self.prepare_batch(x, y)
         h, y_hat = self.bothOutputs(x)
         # return self.loss(y_hat, y)
         return self.loss(y_hat, y)
@@ -215,6 +195,8 @@ class EigenvalueRegularization(Trainer):
             spectra_regul += rTemp
         return spectra_regul
 
+    def train_epoch(self, X: DataLoader):
+        raise NotImplementedError
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
