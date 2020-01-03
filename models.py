@@ -18,27 +18,27 @@ from torch import save
 from utils import JacobianReg
 from architectures import MLP, CNN
 
-def filter_n_eval(func, **kwargs):
-    """
-    Takes kwargs and passes ONLY the named parameters that are specified in the callable func
-    :param func: Callable for which we'll filter the kwargs and then pass them
-    :param kwargs:
-    :return:
-    """
-    args = inspect.signature(func)
-    right_ones = kwargs.keys() & args.parameters.keys()
-    newargs = {key: kwargs[key] for key in right_ones}
-    return func(**newargs)
-
-
-def counter(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        # self is an instance of the class
-        output = func(self, *args, **kwargs)
-        self.no_minibatches += 1
-        return output
-    return wrapper
+# def filter_n_eval(func, **kwargs):
+#     """
+#     Takes kwargs and passes ONLY the named parameters that are specified in the callable func
+#     :param func: Callable for which we'll filter the kwargs and then pass them
+#     :param kwargs:
+#     :return:
+#     """
+#     args = inspect.signature(func)
+#     right_ones = kwargs.keys() & args.parameters.keys()
+#     newargs = {key: kwargs[key] for key in right_ones}
+#     return func(**newargs)
+#
+#
+# def counter(func):
+#     @wraps(func)
+#     def wrapper(self, *args, **kwargs):
+#         # self is an instance of the class
+#         output = func(self, *args, **kwargs)
+#         self.no_minibatches += 1
+#         return output
+#     return wrapper
 
 
 # Architectures
