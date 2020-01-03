@@ -59,8 +59,8 @@ class Trainer(nn.Module):
         loss = 0
         mce = 0
         with torch.no_grad():
-            for _, (x,y) in enumerate(tqdm(X)):
-                loss_tmp, mce_tmp = self.evaluate_test_loss(x,y)
+            for _, (x, y) in enumerate(tqdm(X)):
+                loss_tmp, mce_tmp = self.evaluate_test_loss(x, y)
                 loss += loss_tmp
                 mce += mce_tmp
         return loss/len(X), mce/len(X)
@@ -150,7 +150,7 @@ class JacobianRegularization(Trainer):
         self.JacobianReg = JacobianReg(n=n)
 
     def evaluate_training_loss(self, x, y):
-        x, y = self.prepare_batch(x,y)
+        x, y = self.prepare_batch(x, y)
         y_hat = self(x)
         loss = self.loss(y_hat, y)
         x.requires_grad = True  # this is essential!
