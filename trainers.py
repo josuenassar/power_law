@@ -50,7 +50,7 @@ class Trainer(nn.Module):
             self.optimizer.step()
             return loss
 
-    @staticmethod
+    # @staticmethod
     # def evaluate_dataset(X: DataLoader, *, function: Callable):
     #     """
     #     Function could for instance be evaluate_batch  *but* could be something more general
