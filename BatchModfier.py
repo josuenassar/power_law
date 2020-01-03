@@ -41,7 +41,7 @@ class AdversarialTraining(BatchModifier):
         return self._gen_input(x_nat, y)
     
     def prepare_batch(self, x, y):
-        x_adv = self.generate_adv_images(x, y)
+        x_adv, _ = self.generate_adv_images(x, y)
         x_new = torch.cat((x, x_adv), 0)
         y_new = torch.cat((y, y), 0)
         return x_new, y_new
