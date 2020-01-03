@@ -138,14 +138,19 @@ class NoRegularization(Trainer):
     """
     No penalty class
     """
-    def __init__(self, decoratee):
-        super(NoRegularization, self).__init__(decoratee=decoratee)
+    def __init__(self, *,  decoratee: BatchModifier, optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
+        super(NoRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
+                                               lr=lr, weight_decay=weight_decay, max_iter=max_iter,
+                                               save_name=save_name)
 
 
 class JacobianRegularization(Trainer):
 
-    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1):
-        super(JacobianRegularization, self).__init__(decoratee=decoratee)
+    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1,
+                 optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
+        super(JacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
+                                               lr=lr, weight_decay=weight_decay, max_iter=max_iter,
+                                               save_name=save_name)
         self.alpha_jacob = alpha_jacob
         self.JacobianReg = JacobianReg(n=n)
 
@@ -164,10 +169,9 @@ class EigenvalueRegularization(Trainer):
 
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
                  weight_decay=1e-5, alpha_spectra):
-
-        # import pdb; pdb.set_trace()
-        super(EigenvalueRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
-                                                     optimizer=optimizer, lr=lr, weight_decay=weight_decay)
+        super(EigenvalueRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
+                                               lr=lr, weight_decay=weight_decay, max_iter=max_iter,
+                                               save_name=save_name)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
         self.train_regularizer = []  # store the value of the regularizer during training
@@ -184,14 +188,7 @@ class EigenvalueRegularization(Trainer):
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
         "Compute spectra regularizer"
-        spectra_regul = torch.zeros(1, device=self.device)
-        spectra_temp = []
-        for idx in range(len(hidden)):
-            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec, start=self.eig_start, device=self.device)
-            with torch.no_grad():
-                spectra_temp.append(spectra)
-            spectra_regul += rTemp
-        return loss + self.alpha_spectra * spectra_regul
+        return loss + self.alpha_spectra * self.spectra_regularizer(hidden)
 
     def compute_eig_vectors(self, x, y):
         with torch.no_grad():
@@ -199,12 +196,24 @@ class EigenvalueRegularization(Trainer):
         self.eig_vec = eigVec
         return eigVec, loss, spectraTemp, regul
 
+    def spectra_regularizer(self, hidden):
+        "Compute spectra regularizer"
+        spectra_regul = torch.zeros(1, device=self.device)
+        spectra_temp = []
+        for idx in range(len(hidden)):
+            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec, start=self.eig_start, device=self.device)
+            with torch.no_grad():
+                spectra_temp.append(spectra)
+            spectra_regul += rTemp
+        return spectra_regul
 
-class EigenvalueAndJacobianRegularization(Trainer):
+
+class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
                  weight_decay=1e-5, alpha_spectra, alpha_jacob, n=-1):
-        super(EigenvalueRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
-                                                       optimizer=optimizer, lr=lr, weight_decay=weight_decay)
+        super(EigenvalueAndJacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
+                                                       lr=lr, weight_decay=weight_decay, max_iter=max_iter,
+                                                       save_name=save_name, alpha_spectra=alpha_spectra)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
         self.train_regularizer = []  # store the value of the regularizer during training
@@ -223,23 +232,9 @@ class EigenvalueAndJacobianRegularization(Trainer):
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
-        "Compute spectra regularizer"
-        spectra_regul = torch.zeros(1, device=self.device)
-        spectra_temp = []
-        for idx in range(len(hidden)):
-            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec, start=self.eig_start, device=self.device)
-            with torch.no_grad():
-                spectra_temp.append(spectra)
-            spectra_regul += rTemp
+
 
         "Compute jacobian regularization"
         x.requires_grad = True  # this is essential!
-        return loss + self.alpha_spectra * spectra_regul + \
-               self.alpha_jacob * self.loss_regularizer(x, loss) + \
-               self.alpha_jacob * self.loss_regularizer(x, y_hat)
-
-    def compute_eig_vectors(self, x, y):
-        with torch.no_grad():
-            eigVec, loss, spectraTemp, regul = compute_eig_vectors(x, y, self._architecture, self.loss, self.device)
-        self.eig_vec = eigVec
-        return eigVec, loss, spectraTemp, regul
+        return loss + self.alpha_spectra * self.spectra_regularizer(hidden) + self.alpha_jacob * \
+               self.loss_regularizer(x, y_hat)
