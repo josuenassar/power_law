@@ -5,8 +5,9 @@ import os
 
 from torch.utils.data.dataloader import DataLoader
 from architectures import MLP, CNN
-from trainers import AdversarialTraining, MLTraining, NoRegularization, JacobianRegularization,\
-    EigenvalueAndJacobianRegularization, EigenvalueRegularization, Regularizer
+from BatchModfier import AdversarialTraining, MLTraining
+from trainers import NoRegularization, JacobianRegularization,\
+    EigenvalueAndJacobianRegularization, EigenvalueRegularization
 
 
 def filter_n_eval(func, **kwargs):
@@ -62,9 +63,10 @@ class TestModel(unittest.TestCase):
         test_loader = torch.utils.data.DataLoader(test_set, batch_size=100, shuffle=False, **kwargs)
         return train_loader, test_loader
 
-    def test_assert(self):
-        model = self.create_model()
-        self.assertIsInstance(model, Regularizer)
+    # def test_assert(self):
+    #     model = self.create_model()
+    #     self.assertIsInstance(model, Regularizer)
+    # TODO change this assert once Regularizer is replaced with the new trainer
 
     def test_forward(self):
         model = self.create_model()
