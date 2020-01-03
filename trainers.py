@@ -20,8 +20,11 @@ class Trainer(nn.Module):
         self._save_name = save_name
         self.max_iter = max_iter
         self.no_minibatches = 0
+        self.loss = self._batch_modifier._architecture.loss
+        self.bothOutputs = self._batch_modifier._architecture.bothOutputs
         if optimizer.lower() == 'adam':
-            self.optimizer = Adam(params=self.parameters(), lr=lr, weight_decay=weight_decay)
+            self.optimizer = Adam(params=self._batch_modifier._architecture.parameters(),
+                                  lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'sgd':
             self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'rms':
@@ -74,13 +77,14 @@ class Trainer(nn.Module):
 
     def evaluate_training_loss(self, x, y):
         x, y = self._batch_modifier.prepare_batch(x, y)
-        h, y_hat = self._batch_modifier._architecture.bothOutputs(x)
+        # h, y_hat = self._batch_modifier._architecture.bothOutputs(x)
+        h, y_hat = self.bothOutputs(x)
         # return self.loss(y_hat, y)
-        return self._batch_modifier._architecture.loss(y_hat, y)
+        return self.loss(y_hat, y)
 
     def evaluate_test_loss(self, x, y):
         y_hat = self.forward(x)
-        return self._batch_modifier._architecture.loss(y_hat, y), self.compute_mce(y_hat, y)
+        return self.loss(y_hat, y), self.compute_mce(y_hat, y)
 
     @staticmethod
     def compute_mce(y_hat, y):
