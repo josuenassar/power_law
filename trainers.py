@@ -266,8 +266,7 @@ class EigenvalueRegularization(Trainer):
 
 
 class EigenvalueAndJacobianRegularization(Trainer):
-
-
+    pass
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
     def __init__(self, decoratee: BatchModifier, *, alpha_spectra, alpha_jacob):
