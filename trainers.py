@@ -138,19 +138,21 @@ class Trainer(nn.Module):
             return getattr(self._architecture, item)
 
 
-
 class NoRegularization(Trainer):
     """
     No penalty class
     """
-    def __init__(self, decoratee):
-        super(NoRegularization, self).__init__(decoratee=decoratee)
+    def __init__(self, decoratee: BatchModifier, optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
+        super(NoRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer, lr=lr,
+                                               weight_decay=weight_decay, max_iter=max_iter, save_name=save_name)
 
 
 class JacobianRegularization(Trainer):
 
-    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1):
-        super(JacobianRegularization, self).__init__(decoratee=decoratee)
+    def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
+                 weight_decay=1e-5, alpha_jacob, n=-1):
+        super(JacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer, lr=lr,
+                                               weight_decay=weight_decay, max_iter=max_iter, save_name=save_name)
         self.alpha_jacob = alpha_jacob
         self.JacobianReg = JacobianReg(n=n)
 
@@ -171,8 +173,8 @@ class EigenvalueRegularization(Trainer):
                  weight_decay=1e-5, alpha_spectra):
 
         # import pdb; pdb.set_trace()
-        super(EigenvalueRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
-                                                     optimizer=optimizer, lr=lr, weight_decay=weight_decay)
+        super(EigenvalueRegularization, self).__init__(decoratee=decoratee, save_name=save_name, max_iter=max_iter,
+                                                       optimizer=optimizer, lr=lr, weight_decay=weight_decay)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
         self.train_regularizer = []  # store the value of the regularizer during training
@@ -208,7 +210,7 @@ class EigenvalueRegularization(Trainer):
 class EigenvalueAndJacobianRegularization(Trainer):
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
                  weight_decay=1e-5, alpha_spectra, alpha_jacob, n=-1):
-        super(EigenvalueRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
+        super(EigenvalueRegularization, self).__init__(decoratee=decoratee, save_name=save_name, max_iter=max_iter,
                                                        optimizer=optimizer, lr=lr, weight_decay=weight_decay)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
