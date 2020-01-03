@@ -249,18 +249,18 @@ class EigenvalueRegularization(Trainer):
             self.eig_vec.append(vecTemp)
 
         return eigVec, loss, spectraTemp, regul.cpu().item()
-    
-    @staticmethod
-    def estimate_slope(x, y):
-        """
-        y = beta * x^alpha + eps
-        Goal is to obtain estimate of alpha and beta using linear regression
-        """
-        logx = np.log(x)
-        logx = np.vstack((logx, np.ones(logx.shape)))
-        logy = np.log(y)
-        alpha, beta = np.linalg.lstsq(logx.T, logy)[0]
-        return alpha, beta
+
+    # @staticmethod
+    # def estimate_slope(x, y):
+    #     """
+    #     y = beta * x^alpha + eps
+    #     Goal is to obtain estimate of alpha and beta using linear regression
+    #     """
+    #     logx = np.log(x)
+    #     logx = np.vstack((logx, np.ones(logx.shape)))
+    #     logy = np.log(y)
+    #     alpha, beta = np.linalg.lstsq(logx.T, logy)[0]
+    #     return alpha, beta
 
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
