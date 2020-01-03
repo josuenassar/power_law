@@ -79,10 +79,7 @@ class AdversarialTraining(BatchModifier):
 
     def FGSM(self, x_nat, y):
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
-        if len(jacobian.shape) < 4:
-            return x_nat + self.eps * torch.sign(jacobian.unsqueeze(1)), ell
-        else:
-            return x_nat + self.eps * torch.sign(jacobian), ell
+        return x_nat + self.eps * torch.sign(jacobian), ell
 
 
     @staticmethod
