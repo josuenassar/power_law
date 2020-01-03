@@ -151,10 +151,9 @@ class JacobianRegularization(Trainer):
 
     def evaluate_training_loss(self, x, y):
         x, y = self.prepare_batch(x,y)
-        x.requires_grad = True  # this is essential!
         y_hat = self(x)
         loss = self.loss(y_hat, y)
-
+        x.requires_grad = True  # this is essential!
         return loss + self.alpha_jacob * self.loss_regularizer(x, y_hat)
 
     def loss_regularizer(self, x, y_hat):
@@ -202,25 +201,45 @@ class EigenvalueRegularization(Trainer):
 
 
 class EigenvalueAndJacobianRegularization(Trainer):
-    pass
+    def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
+                 weight_decay=1e-5, alpha_spectra, alpha_jacob, n=-1):
+        super(EigenvalueRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
+                                                       optimizer=optimizer, lr=lr, weight_decay=weight_decay)
+        self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
+        self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
+        self.train_regularizer = []  # store the value of the regularizer during training
+        self.valLoss = []  # validation loss
+        self.val_regularizer = []  # validation regularizer
+        self.eig_vec = []
+        self.alpha_spectra = alpha_spectra
+        self.eig_start = 10
+        self.alpha_jacob = alpha_jacob
+        self.JacobianReg = JacobianReg(n=n)
 
-class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
-    def __init__(self, decoratee: BatchModifier, *, alpha_spectra, alpha_jacob):
-        EigenvalueRegularization.__init__(self, decoratee=decoratee, alpha_spectra=alpha_spectra)
-        JacobianRegularization.__init__(self, decoratee=decoratee, alpha_jacob=alpha_jacob)
+    "Overwrites method in trainer"
 
-    # overwrites method in trainer
     def evaluate_training_loss(self, x, y):
-        x, y = self.prepare_batch(x,y)
+        x, y = self.prepare_batch(x, y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
-        # Compute spectra regularizer
+        "Compute spectra regularizer"
         spectra_regul = torch.zeros(1, device=self.device)
         spectra_temp = []
         for idx in range(len(hidden)):
-            spectra, rTemp = self.eigen_val_regulate(hidden[idx], self.eig_vec)  # compute spectra for each hidden layer
+            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec, start=self.eig_start, device=self.device)
             with torch.no_grad():
                 spectra_temp.append(spectra)
             spectra_regul += rTemp
-        return loss + self.alpha_spectra * spectra_regul + self.alpha_jacob * self.loss_regularizer(x, loss)
+
+        "Compute jacobian regularization"
+        x.requires_grad = True  # this is essential!
+        return loss + self.alpha_spectra * spectra_regul + \
+               self.alpha_jacob * self.loss_regularizer(x, loss) + \
+               self.alpha_jacob * self.loss_regularizer(x, y_hat)
+
+    def compute_eig_vectors(self, x, y):
+        with torch.no_grad():
+            eigVec, loss, spectraTemp, regul = compute_eig_vectors(x, y, self._architecture, self.loss, self.device)
+        self.eig_vec = eigVec
+        return eigVec, loss, spectraTemp, regul
