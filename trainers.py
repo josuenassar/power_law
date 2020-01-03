@@ -190,7 +190,8 @@ class EigenvalueRegularization(Trainer):
         spectra_regul = torch.zeros(1, device=self.device)
         spectra_temp = []
         for idx in range(len(hidden)):
-            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec, start=self.eig_start, device=self.device)
+            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec[idx],
+                                                start=self.eig_start, device=self.device)
             with torch.no_grad():
                 spectra_temp.append(spectra)
             spectra_regul += rTemp
