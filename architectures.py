@@ -1,5 +1,6 @@
 from torch import nn
 # Architectures
+
 class ModelArchitecture(nn.Module):
     """
     A meta class that defines the forward propagation method of nn.Module
@@ -29,14 +30,14 @@ class MLP(ModelArchitecture):
     """
     Multilayer perceptron with a variable amount of hidden layers
     """
-    def __init__(self, *, dims, activation='relu', bn=False):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
         """
         Constructor for MLP with a variable number of hidden layers
         :param dims: A list of N tuples where the first N -1 determine the N - 1 hidden layers and the last tuple
         determines the output layer
         :param activation: a string that determines which activation layer to use. The default is relu
         """
-        super().__init__()
+        super().__init__(cuda=cuda)
         self.numHiddenLayers = len(dims[:-1])  # number of hidden layers in the network
         self.bn = bn
         modules = []
@@ -77,14 +78,14 @@ class CNN(ModelArchitecture):
     """
     CNN architecture with a variable number of convolutional layers and a variable number of fully connected layers
     """
-    def __init__(self, *, dims, activation='relu', bn=False):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
         """
         Constructor for CNN
         :param dims: A list of N tuples where the first element states how many convolutional layers to use
         are defined as (# input channels, kernel size, # output channels)
         :param activation: a string that determines which activation layer to use. The default is relu
         """
-        super().__init__()
+        super().__init__(cuda=cuda)
         self.numConvLayers = dims[0]
         dims = dims[1:]
         self.bn = bn
