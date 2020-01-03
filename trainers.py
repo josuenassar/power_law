@@ -2,29 +2,23 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam, SGD, rmsprop
 import numpy as np
-import inspect
-from functools import wraps
-import copy
 from copy import deepcopy
 from uuid import uuid4
 from tqdm import tqdm
-from typing import Callable, Union
-
-import unittest
-import os
-
+from typing import Callable
 from torch.utils.data.dataloader import DataLoader
 from torch import save
 from utils import JacobianReg, counter
+from BatchModfier import BatchModifier
 
 
 class Trainer(nn.Module):
-    def __init__(self, *, decoratee, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3, weight_decay=1e-5):
+
+    def __init__(self, *, decoratee: BatchModifier, optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
         super(Trainer, self).__init__()
-        self._architecture = decoratee
+        self._batch_modifier = decoratee
         self._save_name = save_name
         self.max_iter = max_iter
-        self.loss = nn.CrossEntropyLoss()
         self.no_minibatches = 0
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self.parameters(), lr=lr, weight_decay=weight_decay)
@@ -36,7 +30,7 @@ class Trainer(nn.Module):
             print('WOAH THERE BUDDY, THAT ISNT AN OPTION')
 
     def forward(self, x):
-        return self._architecture(x)
+        return self._batch_modifier(x)
 
     @counter
     def train_batch(self, x, y):
@@ -75,6 +69,7 @@ class Trainer(nn.Module):
         self.evaluate_dataset(X, function=self.train_batch)
 
     def evaluate_training_loss(self, x, y):
+        x, y = self.prepare_batch(x, y)
         h, y_hat = self.bothOutputs(x)
         return self.loss(y_hat, y)
 
@@ -92,9 +87,6 @@ class Trainer(nn.Module):
         """
         _, predicted = torch.max(y_hat, 1)
         return (predicted != y.data).float().mean()
-
-    def test(self, X: DataLoader):
-        return self.evaluate_dataset(X, function=self.evaluate_test_loss)
 
 # Utilities for serializing the model
     def serialize_model_type(self, filename=None):
@@ -140,17 +132,23 @@ class Trainer(nn.Module):
         except AttributeError:
             return getattr(self._architecture, item)
 
+
+
+class NoRegularization(Trainer):
+    """
+    No penalty class
+    """
+    def __init__(self, decoratee):
+        super(NoRegularization, self).__init__(decoratee=decoratee)
+
+
 class JacobianRegularization(Trainer):
 
-    def __init__(self, *, decoratee, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
-                 weight_decay=1e-5, alpha_jacob, n=-1):
-
-        super(JacobianRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
-                                                     optimizer=optimizer, lr=lr, weight_decay=weight_decay)
+    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1):
+        super(JacobianRegularization, self).__init__(decoratee=decoratee)
         self.alpha_jacob = alpha_jacob
         self.JacobianReg = JacobianReg(n=n)
 
-    "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
         x.requires_grad = True  # this is essential!
         y_hat = self(x)
@@ -179,6 +177,7 @@ class EigenvalueRegularization(Trainer):
         self.eig_T = None
         self.alpha_spectra = alpha_spectra
         self.eig_start = 10
+        # self.EigDataLoader = None
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
@@ -269,8 +268,7 @@ class EigenvalueAndJacobianRegularization(Trainer):
 
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
-
-    def __init__(self, *, alpha_spectra, alpha_jacob):
+    def __init__(self, decoratee: BatchModifier, *, alpha_spectra, alpha_jacob):
         EigenvalueRegularization.__init__(self, decoratee=decoratee, alpha_spectra=alpha_spectra)
         JacobianRegularization.__init__(self, decoratee=decoratee, alpha_jacob=alpha_jacob)
 
