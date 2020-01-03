@@ -23,7 +23,7 @@ class AdversarialTraining(BatchModifier):
     """
     Class that will be in charge of generating batches of adversarial images
     """
-    def __init__(self, *, decoratee, eps, lr, gradSteps, noRestarts, training_type='pgd'):
+    def __init__(self, *, decoratee, eps, alpha, gradSteps, noRestarts, training_type='pgd'):
         super(AdversarialTraining, self).__init__(decoratee=decoratee)
         self.eps = eps  # radius of l infinity ball
         self.lr = lr.to(decoratee.device)
