@@ -33,7 +33,7 @@ class Trainer(nn.Module):
         return self._batch_modifier(x)
 
     def train_epoch(self, X: DataLoader):
-        for _, (x, y) in enumerate(X):
+        for _, (x, y) in enumerate(tqmd(X)):
             self.train_batch(x, y)
 
     @counter
