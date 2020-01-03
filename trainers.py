@@ -199,6 +199,8 @@ class EigenvalueRegularization(Trainer):
 
     def train_epoch(self, X: DataLoader, X_full, Y_full):
         self.compute_eig_vectors(X_full, Y_full)
+        X_full.to('cpu')
+        Y_full.to('cpu')
         for _, (x, y) in enumerate(tqdm(X)):
             self.train_batch(x.to(self.device), y.to(self.device))
         # raise NotImplementedError
