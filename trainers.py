@@ -32,6 +32,10 @@ class Trainer(nn.Module):
     def forward(self, x):
         return self._batch_modifier(x)
 
+    def train_epoch(self, X: DataLoader):
+        for _, (x, y) in enumerate(X):
+            self.train_batch(x, y)
+
     @counter
     def train_batch(self, x, y):
         if self.no_minibatches > self.max_iter:
@@ -131,7 +135,6 @@ class Trainer(nn.Module):
             return super().__getattr__(item)
         except AttributeError:
             return getattr(self._architecture, item)
-
 
 
 class NoRegularization(Trainer):
