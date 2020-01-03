@@ -167,6 +167,19 @@ def compute_eig_vectors(x, y, model, loss, device):
 
     return eigVec, loss, spectraTemp, regul.cpu().item()
 
+def compute_eig_vectors_only(hidden):
+    eigVec = []
+
+    for idx in range(len(hidden)):
+        hTemp = hidden[idx] - torch.mean(hidden[idx], 0)
+        cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
+        cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
+        cov = (cov + cov.transpose(1, 0)) / 2
+        _, _, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+        vecTemp = vecTemp.float()
+        eigVec.append(vecTemp)
+
+    return eigVec
 
 def eigen_val_regulate(x, v, eigT, start=10, device='cpu'):
     """

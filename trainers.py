@@ -1,12 +1,12 @@
 import torch
 import torch.nn as nn
-from torch.optim import Adam, SGD, rmsprop
+from torch.optim import Adam, SGD, RMSprop
 from copy import deepcopy
 from uuid import uuid4
 from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
 from torch import save
-from utils import JacobianReg, counter, compute_eig_vectors, eigen_val_regulate
+from utils import JacobianReg, counter, compute_eig_vectors, eigen_val_regulate, compute_eig_vectors_only
 from BatchModfier import BatchModifier
 
 
@@ -20,11 +20,11 @@ class Trainer(nn.Module):
         self.no_minibatches = 0
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self.parameters(),
-                                  lr=lr, weight_decay=weight_decay)
+                                  lr=lr, weight_decay=weight_decay,amsgrad=True)
         elif optimizer.lower() == 'sgd':
             self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'rms':
-            self.optimizer = rmsprop(params=self.parameters(), lr=lr, weight_decay=weight_decay)
+            self.optimizer = RMSprop(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         else:
             print('WOAH THERE BUDDY, THAT ISNT AN OPTION')
 
@@ -180,9 +180,10 @@ class EigenvalueRegularization(Trainer):
 
     def compute_eig_vectors(self, x, y):
         with torch.no_grad():
-            eigVec, loss, spectraTemp, regul = compute_eig_vectors(x, y, self._architecture, self.loss, self.device)
+            hidden, _ = self.bothOutputs(x)
+            eigVec = compute_eig_vectors_only(hidden)
         self.eig_vec = eigVec
-        return eigVec, loss, spectraTemp, regul
+        return eigVec
 
     def spectra_regularizer(self, hidden):
         "Compute spectra regularizer"
@@ -196,7 +197,7 @@ class EigenvalueRegularization(Trainer):
         return spectra_regul
 
     def train_epoch(self, X: DataLoader, X_full, Y_full):
-        _, _, _, _ = self.compute_eig_vectors(X_full, Y_full)
+        self.compute_eig_vectors(X_full, Y_full)
         for _, (x, y) in enumerate(tqdm(X)):
             self.train_batch(x, y)
         # raise NotImplementedError

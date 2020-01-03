@@ -44,7 +44,8 @@ class TestModel(unittest.TestCase):
     @staticmethod
     def create_model():
         kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
-                  "trainer": "vanilla", "regularizer": "jac", "alpha_spectra": 1, "alpha_jacob": 1}
+                  "trainer": "vanilla", "regularizer": "jac", "alpha_spectra": 1, "alpha_jacob": 1,
+                  "optimizer":"adam","lr":1e-3, "weight_decay":1e-2}
         return ModelFactory(**kwargs)
 
     @staticmethod
