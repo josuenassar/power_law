@@ -24,6 +24,7 @@ class Trainer(nn.Module):
         self._architecture = decoratee
         self._save_name = save_name
         self.max_iter = max_iter
+        self.loss = nn.CrossEntropyLoss()
         self.no_minibatches = 0
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self.parameters(), lr=lr, weight_decay=weight_decay)
