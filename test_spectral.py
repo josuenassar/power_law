@@ -16,9 +16,13 @@ from torchvision import datasets, transforms
 
 # In[]
 "Create model"
+# kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
+#           "trainer": "vanilla", "regularizer": "eig", 'alpha_spectra': 1e-3, 'optimizer': 'adam',
+#           'alpha_jacob': 1e-3, 'lr': 1e-3, 'weight_decay': 1e-5, 'cuda': False}
 kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
-          "trainer": "vanilla", "regularizer": "eig", 'alpha_spectra': 1e-3, 'optimizer': 'adam',
-          'alpha_jacob': 1e-3, 'lr': 1e-3, 'weight_decay': 1e-5, 'cuda': False}
+          "trainer": "adv", "regularizer": "no", 'alpha_spectra': 1e-3, 'alpha_jacob':1e-4,
+          'optimizer': 'adam', 'lr': 1e-3, 'weight_decay': 1e-5, 'cuda': False, 'eps': 0.1,
+          'gradSteps': 1, 'noRestarts': 0, 'alpha': 0, 'training_type': 'FGSM'}
 model = models.ModelFactory(**kwargs)
 
 
@@ -39,8 +43,8 @@ full_loader = torch.utils.data.DataLoader(train_set, batch_size=60_000, sampler=
                                            **kwargs)
 
 # In[]
-full_X, full_Y = next(iter(full_loader))
+# full_X, full_Y = next(iter(full_loader))
 
 # In[]
 "Train that bad boy"
-model.train_epoch(train_loader, full_X, full_Y)
+model.train_epoch(train_loader)
