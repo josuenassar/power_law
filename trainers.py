@@ -76,7 +76,7 @@ class Trainer(nn.Module):
         x, y = self._batch_modifier.prepare_batch(x, y)
         h, y_hat = self._batch_modifier._architecture.bothOutputs(x)
         # return self.loss(y_hat, y)
-        return self.loss(y_hat, y)
+        return self._batch_modifier._architecture.loss(y_hat, y)
 
     def evaluate_test_loss(self, x, y):
         y_hat = self.forward(x)
