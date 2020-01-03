@@ -135,20 +135,6 @@ class JacobianReg(nn.Module):
                                       create_graph=create_graph)
         return grad_x
 
-
-def filter_n_eval(func, **kwargs):
-    """
-    Takes kwargs and passes ONLY the named parameters that are specified in the callable func
-    :param func: Callable for which we'll filter the kwargs and then pass them
-    :param kwargs:
-    :return:
-    """
-    args = inspect.signature(func)
-    right_ones = kwargs.keys() & args.parameters.keys()
-    newargs = {key: kwargs[key] for key in right_ones}
-    return func(**newargs)
-
-
 def counter(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
