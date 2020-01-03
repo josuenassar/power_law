@@ -73,8 +73,8 @@ class Trainer(nn.Module):
         self.evaluate_dataset(X, function=self.train_batch)
 
     def evaluate_training_loss(self, x, y):
-        x, y = self.prepare_batch(x, y)
-        h, y_hat = self.bothOutputs(x)
+        x, y = self._batch_modifier.prepare_batch(x, y)
+        h, y_hat = self._batch_modifier._architecture.bothOutputs(x)
         return self.loss(y_hat, y)
 
     def evaluate_test_loss(self, x, y):
@@ -130,11 +130,11 @@ class Trainer(nn.Module):
             model_data = {**model_data, **other_vars}
         save(model_data, self.save_name)
 
-    def __getattr__(self, item):
-        try:
-            return super().__getattr__(item)
-        except AttributeError:
-            return getattr(self._architecture, item)
+    # def __getattr__(self, item):
+    #     try:
+    #         return super().__getattr__(item)
+    #     except AttributeError:
+    #         return getattr(self._architecture, item)
 
 
 class NoRegularization(Trainer):
