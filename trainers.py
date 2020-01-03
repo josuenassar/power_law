@@ -174,10 +174,8 @@ class EigenvalueRegularization(Trainer):
         self.valLoss = []  # validation loss
         self.val_regularizer = []  # validation regularizer
         self.eig_vec = []
-        self.eig_T = None
         self.alpha_spectra = alpha_spectra
         self.eig_start = 10
-        # self.EigDataLoader = None
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
