@@ -182,7 +182,7 @@ class EigenvalueRegularization(Trainer):
         with torch.no_grad():
             hidden, _ = self.bothOutputs(x)
             eigVec = compute_eig_vectors_only(hidden)
-        self.eig_vec = eigVec.to(self.device)
+        self.eig_vec = eigVec
         return eigVec
 
     def spectra_regularizer(self, hidden):
