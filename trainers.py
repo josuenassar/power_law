@@ -168,6 +168,15 @@ class EigenvalueRegularization(Trainer):
         self.eig_vec = []
         self.alpha_spectra = alpha_spectra
         self.eig_start = 10
+        self.eig_loader = None
+
+    def add_eig_loader(self, X):
+        # x,y = next(iter(tl))
+        # import pdb; pdb.set_trace()
+        if X.dataset.train:
+            self.eig_loader = torch.utils.data.DataLoader(X.dataset, batch_size=len(X.dataset.data), shuffle=False,
+                                          num_workers=X.num_workers,
+                                          pin_memory=X.pin_memory)
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
@@ -197,7 +206,14 @@ class EigenvalueRegularization(Trainer):
             spectra_regul += rTemp
         return spectra_regul
 
-    def train_epoch(self, X: DataLoader, X_full, Y_full):
+    def train_epoch(self, X: DataLoader, X_full=None, Y_full=None):
+
+        if X_full is None and Y_full is None and self.eig_loader is None:
+            self.add_eig_loader(X)
+        elif X_full is None and Y_full is None and self.eig_loader is not None:
+            X_full, Y_full = next(iter(self.eig_loader))
+
+
         self.compute_eig_vectors(X_full, Y_full)
         X_full.to('cpu')
         Y_full.to('cpu')
