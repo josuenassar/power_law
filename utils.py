@@ -135,6 +135,7 @@ class JacobianReg(nn.Module):
                                       create_graph=create_graph)
         return grad_x
 
+
 def counter(func):
     @wraps(func)
     def wrapper(self, *args, **kwargs):
@@ -167,6 +168,7 @@ def compute_eig_vectors(x, y, model, loss, device):
 
     return eigVec, loss, spectraTemp, regul.cpu().item()
 
+
 def compute_eig_vectors_only(hidden):
     eigVec = []
 
@@ -181,7 +183,8 @@ def compute_eig_vectors_only(hidden):
 
     return eigVec
 
-def eigen_val_regulate(x, v, eigT, start=10, device='cpu'):
+
+def eigen_val_regulate(x, v, eigT=None, start=10, device='cpu'):
     """
     Function that approximates the eigenvalues of the matrix x, by finding them wrt some pseudo eigenvectors v and then
     penalizes eigenvalues that stray too far away from a power law
