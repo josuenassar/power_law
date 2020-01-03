@@ -142,7 +142,7 @@ class NoRegularization(Trainer):
         super(NoRegularization, self).__init__(decoratee=decoratee)
 
 
-class JacobianRegularization(Regularizer):
+class JacobianRegularization(Trainer):
 
     def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1):
         super(JacobianRegularization, self).__init__(decoratee=decoratee)
@@ -160,11 +160,14 @@ class JacobianRegularization(Regularizer):
         return self.JacobianReg(x, y_hat)
 
 
-class EigenvalueRegularization(Regularizer):
+class EigenvalueRegularization(Trainer):
 
-    def __init__(self, decoratee: Union[Regularizer, Trainer], *, alpha_spectra):
+    def __init__(self, *, decoratee, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
+                 weight_decay=1e-5, alpha_spectra):
+
         # import pdb; pdb.set_trace()
-        super(EigenvalueRegularization, self).__init__(decoratee=decoratee)
+        super(EigenvalueRegularization, self).__init__(*, decoratee=decoratee, save_name=save_name, max_iter=max_iter,
+                                                     optimizer=optimizer, lr=lr, weight_decay=weight_decay)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
         self.train_regularizer = []  # store the value of the regularizer during training
@@ -176,7 +179,7 @@ class EigenvalueRegularization(Regularizer):
         self.eig_start = 10
         # self.EigDataLoader = None
 
-# overwrites method in trainer
+    "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
@@ -246,31 +249,17 @@ class EigenvalueRegularization(Regularizer):
 
         return eigVec, loss, spectraTemp, regul.cpu().item()
 
-# overwrites method in trainer
-    def train_epoch(self, x, y):
-        # x, y = next(iter(self.EigDataLoader))
-        # x, y = next(iter(X))
-
-        with torch.no_grad():
-            self.eigVec, loss, spectraTemp, regul = self.compute_eig_vectors(x, y)
-            self.trainSpectra.append(spectraTemp)  # store computed eigenspectra
-            self.trainLoss.append(loss.cpu().item())  # store training loss
-            self.trainRegularizer.append(self.omega * regul)  # store value of regularizer
-            self.eig_T = None
-        for _, (x, y) in enumerate(tqdm(X)):
-            self.train_batch(x, y)
-
-    @staticmethod
-    def estimate_slope(x, y):
-        """
-        y = beta * x^alpha + eps
-        Goal is to obtain estimate of alpha and beta using linear regression
-        """
-        logx = np.log(x)
-        logx = np.vstack((logx, np.ones(logx.shape)))
-        logy = np.log(y)
-        alpha, beta = np.linalg.lstsq(logx.T, logy)[0]
-        return alpha, beta
+    # @staticmethod
+    # def estimate_slope(x, y):
+    #     """
+    #     y = beta * x^alpha + eps
+    #     Goal is to obtain estimate of alpha and beta using linear regression
+    #     """
+    #     logx = np.log(x)
+    #     logx = np.vstack((logx, np.ones(logx.shape)))
+    #     logy = np.log(y)
+    #     alpha, beta = np.linalg.lstsq(logx.T, logy)[0]
+    #     return alpha, beta
 
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
