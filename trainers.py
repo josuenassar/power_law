@@ -33,7 +33,7 @@ class Trainer(nn.Module):
 
     def train_epoch(self, X: DataLoader):
         for _, (x, y) in enumerate(tqdm(X)):
-            self.train_batch(x, y)
+            self.train_batch(x.to(self.device), y.to(self.device))
 
     @counter
     def train_batch(self, x, y):
@@ -171,7 +171,7 @@ class EigenvalueRegularization(Trainer):
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
-        x, y = self.prepare_batch(x,y)
+        x, y = self.prepare_batch(x, y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
@@ -200,7 +200,7 @@ class EigenvalueRegularization(Trainer):
     def train_epoch(self, X: DataLoader, X_full, Y_full):
         self.compute_eig_vectors(X_full, Y_full)
         for _, (x, y) in enumerate(tqdm(X)):
-            self.train_batch(x, y)
+            self.train_batch(x.to(self.device), y.to(self.device))
         # raise NotImplementedError
 
 
