@@ -5,7 +5,7 @@ import numpy as np
 from copy import deepcopy
 from uuid import uuid4
 from tqdm import tqdm
-from typing import Callable, Union
+from typing import Callable
 from torch.utils.data.dataloader import DataLoader
 from torch import save
 from utils import JacobianReg, counter
@@ -264,7 +264,7 @@ class EigenvalueRegularization(Trainer):
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
 
-    def __init__(self, decoratee: Union[Regularizer, Trainer], *, alpha_spectra, alpha_jacob):
+    def __init__(self, decoratee: BatchModifier, *, alpha_spectra, alpha_jacob):
         EigenvalueRegularization.__init__(self, decoratee=decoratee, alpha_spectra=alpha_spectra)
         JacobianRegularization.__init__(self, decoratee=decoratee, alpha_jacob=alpha_jacob)
 
