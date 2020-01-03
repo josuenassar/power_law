@@ -2,26 +2,21 @@ import torch
 import torch.nn as nn
 from torch.optim import Adam, SGD, rmsprop
 import numpy as np
-import inspect
-from functools import wraps
-import copy
 from copy import deepcopy
 from uuid import uuid4
 from tqdm import tqdm
 from typing import Callable, Union
-
-import unittest
-import os
-
 from torch.utils.data.dataloader import DataLoader
 from torch import save
-from utils import JacobianReg
+from utils import JacobianReg, counter
+from BatchModfier import BatchModifier
+
 
 class Trainer(nn.Module):
 
-    def __init__(self, *, decoratee, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3, weight_decay=1e-5):
+    def __init__(self, *, decoratee: BatchModifier, optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
         super(Trainer, self).__init__()
-        self._architecture = decoratee
+        self._batch_modifier = decoratee
         self._save_name = save_name
         self.max_iter = max_iter
         self.no_minibatches = 0
@@ -35,7 +30,7 @@ class Trainer(nn.Module):
             print('WOAH THERE BUDDY, THAT ISNT AN OPTION')
 
     def forward(self, x):
-        return self._architecture(x)
+        return self._batch_modifier(x)
 
     @counter
     def train_batch(self, x, y):
@@ -74,6 +69,7 @@ class Trainer(nn.Module):
         self.evaluate_dataset(X, function=self.train_batch)
 
     def evaluate_training_loss(self, x, y):
+        x, y = self.prepare_batch(x, y)
         h, y_hat = self.bothOutputs(x)
         return self.loss(y_hat, y)
 
@@ -91,9 +87,6 @@ class Trainer(nn.Module):
         """
         _, predicted = torch.max(y_hat, 1)
         return (predicted != y.data).float().mean()
-
-    def test(self, X: DataLoader):
-        return self.evaluate_dataset(X, function=self.evaluate_test_loss)
 
 # Utilities for serializing the model
     def serialize_model_type(self, filename=None):
@@ -140,90 +133,8 @@ class Trainer(nn.Module):
             return getattr(self._architecture, item)
 
 
-class AdversarialTraining(Trainer):
-    """
-    Class that will be in charge of generating batches of adversarial images
-    """
-    def __init__(self, *, decoratee, eps, lr, gradSteps, noRestarts, cuda, training_type='pgd'):
-        # def __init__(self, eps=0.3, lr=0.01, gradSteps=100, noRestarts=0, cuda=False):
-        """
-        Constructor for a first order adversary
-        :param eps: radius of l infinity ball
-        :param lr: learning rate
-        :param gradSteps: number of gradient steps
-        :param noRestarts: number of restarts
-        """
-        super(AdversarialTraining, self).__init__(decoratee=decoratee)
-        self.eps = eps  # radius of l infinity ball
-        self.lr = lr.cuda() if cuda is True else lr.cpu()  # learning rate
-        self.gradSteps = gradSteps  # number of gradient steps to take
-        self.noRestarts = noRestarts  # number of restarts
-        self.cuda = cuda
-        if training_type == 'FGSM':
-            self._gen_input = self.FGSM
-        elif training_type == 'PGD':
-            self._gen_input = self.pgd_loop
-        elif training_type == 'FREE':
-            raise NotImplementedError
 
-    def generate_adv_images(self, x_nat, y):
-        return self._gen_input(x_nat, y)
-
-# overwrites method in trainer base
-    def evaluate_training_loss(self, x, y):
-        # overwrites method in trainer
-        x_adv = self.generate_adv_images(x, y)
-        x_new = torch.cat((x, x_adv), 0)
-        y_new = torch.cat((y, y), 0)
-        return super(self).evaluate_training_loss(x_new, y_new)
-
-    def pgd_loop(self, x_nat, y):
-        losses = torch.zeros(self.noRestarts)
-        xs = []
-        for r in range(self.noRestarts):
-            perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-            xT, ellT = self.pgd(x_nat, x_nat + perturb, y)  # do pgd
-            xs.append(xT)
-            losses[r] = ellT
-        idx = torch.argmax(losses)
-        x = xs[idx]  # choose the one with the largest loss function
-        ell = losses[idx]
-        return x, ell
-
-    def pgd(self, x_nat, x, y):
-        """
-        Perform projected gradient descent from Madry et al 2018
-        :param x_nat: starting image
-        :param x: starting point for optimization
-        :param y: true label of image
-        :return: x, the maximum found
-        """
-        for i in range(self.gradSteps):
-            jacobian, ell = self.get_jacobian(copy.deepcopy(x), y)  # get jacobian
-            x += self.lr * torch.sign(jacobian)  # take gradient step
-            xT = x.detach()
-            xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
-            xT = torch.clamp(xT, 0, 1)
-            x = xT
-        ell = self.loss(x, y)
-        return x, ell.item()
-
-    def FGSM(self, x_nat, y):
-        jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
-        return x_nat + self.eps * torch.sign(jacobian), ell
-
-    @staticmethod
-    def clip(T, Tmin, Tmax):
-        """
-
-        :param T: input tensor
-        :param Tmin: input tensor containing the minimal elements
-        :param Tmax: input tensor containing the maximal elements
-        :return:
-        """
-        return torch.max(torch.min(T, Tmax), Tmin)
-
-class NoRegularization(Regularizer):
+class NoRegularization(Trainer):
     """
     No penalty class
     """
@@ -233,7 +144,7 @@ class NoRegularization(Regularizer):
 
 class JacobianRegularization(Regularizer):
 
-    def __init__(self, *, decoratee: Union[Regularizer, Trainer], alpha_jacob, n=-1):
+    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1):
         super(JacobianRegularization, self).__init__(decoratee=decoratee)
         self.alpha_jacob = alpha_jacob
         self.JacobianReg = JacobianReg(n=n)
