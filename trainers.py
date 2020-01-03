@@ -20,8 +20,8 @@ class Trainer(nn.Module):
         self._save_name = save_name
         self.max_iter = max_iter
         self.no_minibatches = 0
-        self.loss = self._batch_modifier._architecture.loss
-        self.bothOutputs = self._batch_modifier._architecture.bothOutputs
+        # self.loss = self._batch_modifier._architecture.loss
+        # self.bothOutputs = self._batch_modifier._architecture.bothOutputs
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self._batch_modifier._architecture.parameters(),
                                   lr=lr, weight_decay=weight_decay)
