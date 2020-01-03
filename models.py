@@ -40,10 +40,10 @@ def counter(func):
         return output
     return wrapper
 
-class Trainer(nn.Module):
+class BatchModfier(nn.Module):
 
     def __init__(self, *, decoratee, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3, weight_decay=1e-5):
-        super(Trainer, self).__init__()
+        super(BatchModfier, self).__init__()
         self._architecture = decoratee
         self._save_name = save_name
         self.max_iter = max_iter
@@ -160,7 +160,7 @@ class Trainer(nn.Module):
             return getattr(self._architecture, item)
 
 
-class AdversarialTraining(Trainer):
+class AdversarialTraining(BatchModfier):
     """
     Class that will be in charge of generating batches of adversarial images
     """
@@ -243,7 +243,7 @@ class AdversarialTraining(Trainer):
         return torch.max(torch.min(T, Tmax), Tmin)
 
 
-class MLTraining(Trainer):
+class MLTraining(BatchModfier):
 
     def __init__(self, decoratee):
         super(MLTraining, self).__init__(decoratee=decoratee)
