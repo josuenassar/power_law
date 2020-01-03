@@ -135,11 +135,11 @@ class Trainer(nn.Module):
             model_data = {**model_data, **other_vars}
         save(model_data, self.save_name)
 
-    # def __getattr__(self, item):
-    #     try:
-    #         return super().__getattr__(item)
-    #     except AttributeError:
-    #         return getattr(self._architecture, item)
+    def __getattr__(self, item):
+        try:
+            return super().__getattr__(item)
+        except AttributeError:
+            return getattr(self._batch_modifier, item)
 
 
 class NoRegularization(Trainer):
