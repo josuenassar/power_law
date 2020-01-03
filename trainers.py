@@ -51,7 +51,6 @@ class Trainer(nn.Module):
         mce = 0
         with torch.no_grad():
             for _, (x, y) in enumerate(tqdm(X)):
-                print(self.device)
                 loss_tmp, mce_tmp = self.evaluate_test_loss(x.to(self.device), y.to(self.device))
                 loss += loss_tmp
                 mce += mce_tmp
