@@ -251,6 +251,7 @@ class EigenvalueRegularization(Trainer):
 
         return eigVec, loss, spectraTemp, regul.cpu().item()
 
+    "No need for this if we have it in utils"
     # @staticmethod
     # def estimate_slope(x, y):
     #     """
@@ -264,8 +265,11 @@ class EigenvalueRegularization(Trainer):
     #     return alpha, beta
 
 
-class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
+class EigenvalueAndJacobianRegularization(Trainer):
 
+
+
+class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
     def __init__(self, decoratee: BatchModifier, *, alpha_spectra, alpha_jacob):
         EigenvalueRegularization.__init__(self, decoratee=decoratee, alpha_spectra=alpha_spectra)
         JacobianRegularization.__init__(self, decoratee=decoratee, alpha_jacob=alpha_jacob)
