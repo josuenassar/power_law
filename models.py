@@ -34,6 +34,7 @@ def ModelFactory(**kwargs):
                'eigjac': EigenvalueAndJacobianRegularization
                }
     arch = filter_n_eval(classes[kwargs["architecture"].lower()], **kwargs)
+    arch.to(arch.device)
     trainer = filter_n_eval(classes[kwargs["trainer"].lower()], decoratee=arch, **kwargs)
     model = filter_n_eval(classes[kwargs["regularizer"].lower()], decoratee=trainer, **kwargs)
     return model
