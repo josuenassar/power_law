@@ -251,19 +251,6 @@ class EigenvalueRegularization(Trainer):
 
         return eigVec, loss, spectraTemp, regul.cpu().item()
 
-    "No need for this if we have it in utils"
-    # @staticmethod
-    # def estimate_slope(x, y):
-    #     """
-    #     y = beta * x^alpha + eps
-    #     Goal is to obtain estimate of alpha and beta using linear regression
-    #     """
-    #     logx = np.log(x)
-    #     logx = np.vstack((logx, np.ones(logx.shape)))
-    #     logy = np.log(y)
-    #     alpha, beta = np.linalg.lstsq(logx.T, logy)[0]
-    #     return alpha, beta
-
 
 class EigenvalueAndJacobianRegularization(Trainer):
     pass
