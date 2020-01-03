@@ -23,7 +23,7 @@ class ModelArchitecture(nn.Module):
         y = self(x.to(self.device))
         ell = self.loss(y, y_hat.to(self.device))
         ell.backward()
-        return x.grad.data.squeeze(), ell.item()
+        return x.grad.data, ell.item()
 
 
 class MLP(ModelArchitecture):
