@@ -32,6 +32,10 @@ class Trainer(nn.Module):
     def forward(self, x):
         return self._batch_modifier(x)
 
+    def train_epoch(self, X: DataLoader):
+        for _, (x, y) in enumerate(X):
+            self.train_batch(x, y)
+
     @counter
     def train_batch(self, x, y):
         if self.no_minibatches > self.max_iter:
@@ -42,6 +46,7 @@ class Trainer(nn.Module):
             loss.backward()
             self.optimizer.step()
             return loss
+
 
     @staticmethod
     def evaluate_dataset(X: DataLoader, *, function: Callable):
