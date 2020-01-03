@@ -230,3 +230,6 @@ class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
         "Compute jacobian regularization"
         return loss + self.alpha_spectra * self.spectra_regularizer(hidden) + self.alpha_jacob * \
                self.loss_regularizer(x, y_hat)
+
+    def loss_regularizer(self, x, y_hat):
+        return self.JacobianReg(x, y_hat)
