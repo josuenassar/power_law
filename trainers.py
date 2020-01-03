@@ -150,6 +150,7 @@ class JacobianRegularization(Trainer):
         self.JacobianReg = JacobianReg(n=n)
 
     def evaluate_training_loss(self, x, y):
+        x, y = self.prepare_batch(x,y)
         x.requires_grad = True  # this is essential!
         y_hat = self(x)
         loss = self.loss(y_hat, y)
@@ -179,6 +180,7 @@ class EigenvalueRegularization(Trainer):
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
+        x, y = self.prepare_batch(x,y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
@@ -247,23 +249,9 @@ class EigenvalueRegularization(Trainer):
 
         return eigVec, loss, spectraTemp, regul.cpu().item()
 
-    "No need for this if we have it in utils"
-    # @staticmethod
-    # def estimate_slope(x, y):
-    #     """
-    #     y = beta * x^alpha + eps
-    #     Goal is to obtain estimate of alpha and beta using linear regression
-    #     """
-    #     logx = np.log(x)
-    #     logx = np.vstack((logx, np.ones(logx.shape)))
-    #     logy = np.log(y)
-    #     alpha, beta = np.linalg.lstsq(logx.T, logy)[0]
-    #     return alpha, beta
-
 
 class EigenvalueAndJacobianRegularization(Trainer):
-
-
+    pass
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegularization):
     def __init__(self, decoratee: BatchModifier, *, alpha_spectra, alpha_jacob):
@@ -272,6 +260,7 @@ class EigenvalueAndJacobianRegularization(EigenvalueRegularization, JacobianRegu
 
     # overwrites method in trainer
     def evaluate_training_loss(self, x, y):
+        x, y = self.prepare_batch(x,y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
