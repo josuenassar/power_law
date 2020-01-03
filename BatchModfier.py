@@ -23,10 +23,10 @@ class AdversarialTraining(BatchModifier):
     """
     Class that will be in charge of generating batches of adversarial images
     """
-    def __init__(self, *, decoratee, eps, alpha, gradSteps, noRestarts, training_type='pgd'):
+    def __init__(self, *, decoratee, eps, alpha, gradSteps, noRestarts, training_type='PGD'):
         super(AdversarialTraining, self).__init__(decoratee=decoratee)
         self.eps = eps  # radius of l infinity ball
-        self.lr = lr.to(decoratee.device)
+        self.lr = alpha.to(decoratee.device)
         self.gradSteps = gradSteps  # number of gradient steps to take
         self.noRestarts = noRestarts  # number of restarts
         if training_type == 'FGSM':
