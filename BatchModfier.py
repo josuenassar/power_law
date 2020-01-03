@@ -74,7 +74,7 @@ class AdversarialTraining(BatchModifier):
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
             xT = torch.clamp(xT, 0, 1)
             x = xT
-        ell = self.loss(x, y)
+        ell = self.loss(self._architecture(x), y)
         return x, ell.item()
 
     def FGSM(self, x_nat, y):
