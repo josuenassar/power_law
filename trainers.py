@@ -217,7 +217,6 @@ class EigenvalueRegularization(Trainer):
         elif X_full is None and Y_full is None and self.eig_loader is not None:
             X_full, Y_full = next(iter(self.eig_loader))
 
-
         self.compute_eig_vectors(X_full, Y_full)
         X_full.to('cpu')
         Y_full.to('cpu')
