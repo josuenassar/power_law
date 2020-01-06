@@ -15,7 +15,7 @@ from torch.utils.data.dataloader import DataLoader
 import models
 from torchvision import datasets, transforms
 from joblib import Parallel, delayed
-import training_scripts
+import training_script
 import fire
 
 
@@ -32,7 +32,7 @@ def money(cuda=False):
         for jacob in jacobs:
             for ep in eps:
                 for nonlin in activations:
-                    Parallel(n_jobs=2)(delayed(training_scripts.train_bad_boys)(alpha_eig=eig, alpha_jacob=jacob,
+                    Parallel(n_jobs=2)(delayed(training_script.train_bad_boys)(alpha_eig=eig, alpha_jacob=jacob,
                                                                                 eps=ep, cuda=cuda, nonlin=nonlin,
                                                                                 arch='cnn', max_epochs=100,
                                                                                 save_dir='../data/cnn_1/',
