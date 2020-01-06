@@ -104,8 +104,8 @@ class CNN(ModelArchitecture):
             else:
                 convModules.append(nn.Tanh())
             convModules.append(nn.MaxPool2d(kernel_size=(2, 2), stride=2))
-            h_in = math.floor((h_in - dims[idx][1] - 1) / 2)
-            w_in = math.floor((w_in - dims[idx][1] - 1) / 2)
+            h_in = math.floor(h_in / 2 - 1)
+            w_in = math.floor(w_in / 2 - 1)
             self.max_neurons = max([self.max_neurons, h_in * w_in * dims[idx][-1]])
 
         self.convSequential = nn.Sequential(*convModules)  # convolution layers
