@@ -79,13 +79,19 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
     train_loader, tv_loader = GetDataForModel(model, dataset, validate)
 
     for epoch in tqdm(range(max_epochs), desc="Epochs", ascii=True, position=0, leave=False):
-        model.train_epoch(train_loader)
         """
         Model should be tested for test or validation accuracy & loss; the results should be logged in the logger
         """
+        model.train_epoch(train_loader)
+        mean_ll, mean_mce = model.evaluate_dataset_test_loss(tv_loader)
+        if validate:
+            _run.logger.log_scalar("validLoss", float(mean_ll))
+            _run.logger.log_scalar("validAccuracy", float(1-mean_mce))
+        else:
+            _run.logger.log_scalar("testLoss", float(mean_ll))
+            _run.logger.log_scalar("testAccuracy", float(1-mean_mce))
 
-    if validate:
-        return tv_accuracy
+    return 1-mean_mce
 
 
 # def parser():
