@@ -81,7 +81,7 @@ class CNN(ModelArchitecture):
     """
     CNN architecture with a variable number of convolutional layers and a variable number of fully connected layers
     """
-    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, h_in=28, w_in=28):
         """
         Constructor for CNN
         :param dims: A list of N tuples where the first element states how many convolutional layers to use
