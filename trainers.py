@@ -27,6 +27,7 @@ class Trainer(nn.Module):
             self.optimizer = RMSprop(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         else:
             print('WOAH THERE BUDDY, THAT ISNT AN OPTION')
+        self.logger = None
 
     def forward(self, x):
         return self._batch_modifier(x)
@@ -43,6 +44,8 @@ class Trainer(nn.Module):
             return
         else:
             loss = self.evaluate_training_loss(x, y)
+            if self.logger is not None:
+                self.logger.log_scalar("trainLoss", float(loss))
             self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
