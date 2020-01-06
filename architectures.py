@@ -1,5 +1,7 @@
 from torch import nn
+import math
 # Architectures
+
 
 class ModelArchitecture(nn.Module):
     """
@@ -51,6 +53,7 @@ class MLP(ModelArchitecture):
                 modules.append(nn.BatchNorm1d(dims[idx][1]))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
+        self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
 
     def forward(self, x):
         x = x.view(x.size(0), -1)
@@ -90,6 +93,7 @@ class CNN(ModelArchitecture):
         dims = dims[1:]
         self.bn = bn
         self.numHiddenLayers = len(dims) - 1  # number of hidden layers in the network
+        self.max_neurons = 0
 
         # Construct convolutional layers
         convModules = []
@@ -100,6 +104,10 @@ class CNN(ModelArchitecture):
             else:
                 convModules.append(nn.Tanh())
             convModules.append(nn.MaxPool2d(kernel_size=(2, 2), stride=2))
+            h_in = math.floor((h_in - dims[idx][1] - 1) / 2)
+            w_in = math.floor((w_in - dims[idx][1] - 1) / 2)
+            self.max_neurons = max([self.max_neurons, h_in * w_in * dims[idx][-1]])
+
         self.convSequential = nn.Sequential(*convModules)  # convolution layers
 
         # Construct fully connected layers
@@ -112,6 +120,7 @@ class CNN(ModelArchitecture):
                 linModules.append(nn.Tanh())
             if bn:
                 linModules.append(nn.BatchNorm1d(dims[idx][1]))
+            self.max_neurons = max([self.max_neurons, dims[idx][1]])
         linModules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.linSequential = nn.Sequential(*linModules)
         # self.eigVec = [None] * (len(dims) - 1)  # eigenvectors for all hidden layers
