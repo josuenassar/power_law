@@ -34,6 +34,8 @@ class Trainer(nn.Module):
     def train_epoch(self, X: DataLoader):
         for _, (x, y) in enumerate(tqdm(X)):
             self.train_batch(x.to(self.device), y.to(self.device))
+            x.to('cpu')
+            y.to('cpu')
 
     @counter
     def train_batch(self, x, y):
@@ -52,6 +54,8 @@ class Trainer(nn.Module):
         with torch.no_grad():
             for _, (x, y) in enumerate(tqdm(X)):
                 loss_tmp, mce_tmp = self.evaluate_test_loss(x.to(self.device), y.to(self.device))
+                x.to('cpu')
+                y.to('cpu')
                 loss += loss_tmp
                 mce += mce_tmp
         return loss/len(X), mce/len(X)
@@ -219,6 +223,8 @@ class EigenvalueRegularization(Trainer):
         Y_full.to('cpu')
         for _, (x, y) in enumerate(tqdm(X)):
             self.train_batch(x.to(self.device), y.to(self.device))
+            x.to('cpu')
+            y.to('cpu')
         # raise NotImplementedError
 
 
