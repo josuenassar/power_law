@@ -3,12 +3,12 @@ from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 import numpy as np
 from ModelDefs.trainers import EigenvalueRegularization
-data_dir = '../../'
 
 
-def get_data(dataset, batch_size, _seed, validate):
+
+def get_data(dataset, batch_size, _seed, validate, data_dir):
     validation_split = 10_000
-    kwargs = {'num_workers': 4, 'pin_memory': True}
+    kwargs = {'num_workers': 16, 'pin_memory': True}
     if dataset == "MNIST":
         transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
         train_set = datasets.MNIST(root=data_dir, train=True, download=True, transform=transform)
@@ -17,6 +17,7 @@ def get_data(dataset, batch_size, _seed, validate):
         indices = list(range(num_train))
         if not validate:
             train_sampler = sampler.SubsetRandomSampler(indices)
+            test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, **kwargs)
         else:
             np.random.seed(_seed)
             np.random.shuffle(indices)
@@ -35,6 +36,7 @@ def get_data(dataset, batch_size, _seed, validate):
         indices = list(range(num_train))
         if not validate:
             train_sampler = sampler.SubsetRandomSampler(indices)
+            test_loader = DataLoader(test_set, batch_size=batch_size, shuffle=False, **kwargs)
         else:
             np.random.seed(_seed)
             np.random.shuffle(indices)
@@ -54,9 +56,10 @@ def get_data(dataset, batch_size, _seed, validate):
     return train_loader, test_loader, full_loader
 
 
-def GetDataForModel(model, dataset, _seed, validate=False):
-    batch_size = int(1.05 * model.max_neurons)
-    train_loader, test_loader, full_loader = get_data(dataset, batch_size, _seed, validate)
+def GetDataForModel(model, dataset, _seed, validate=False, batch_size=None, data_dir='../../'):
+    if batch_size is None:
+        batch_size = int(1.05 * model.max_neurons)
+    train_loader, test_loader, full_loader = get_data(dataset, batch_size, _seed, validate, data_dir)
     if isinstance(model, EigenvalueRegularization):
         model.eig_loader = full_loader
     return train_loader, test_loader
