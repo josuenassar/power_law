@@ -51,7 +51,7 @@ class AdversarialTraining(BatchModifier):
         xs = []
         for r in range(self.noRestarts):
             perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-            xT, ellT = self.pgd(x_nat, x_nat + perturb, y)  # do pgd
+            xT, ellT = self.pgd(x_nat, torch.clamp(x_nat + perturb, 0, 1), y)  # do pgd
             xs.append(xT)
             losses[r] = ellT
         idx = torch.argmax(losses)
