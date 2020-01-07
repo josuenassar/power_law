@@ -23,8 +23,8 @@ def money(cuda=False):
     seeds = [i for i in range(3)]
     eigs = [0, 1e-1, 1e-2, 1e-3, 1e-4, 1e-5]
     jacobs = [0, 1e-1, 1e-2, 1e-3, 1e-4]
-    eps = [0, 0.1]
-    activations = ['tanh']
+    eps = [0, abs((0.25 - 1307) / 3081)]
+    activations = ['tanh', 'relu']
     dims = [1, (1, 28), (4032, 128), (128, 10)]
     # In[]
     "Run code"
