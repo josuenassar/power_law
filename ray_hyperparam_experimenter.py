@@ -11,7 +11,6 @@ import argparse
 # import os
 import socket
 from sacred.observers import MongoObserver
-from experiment import ex
 
 
 nGPU = device_count()
@@ -23,25 +22,25 @@ argparser.add_argument("--alpha_jacob",  type=float, default=argparse.SUPPRESS)
 argparser.add_argument("--alpha_spectra",  type=float, default=argparse.SUPPRESS)
 argparser.add_argument("--architecture", choices= ["LeNet5", "MadryMNIST", "mlp", "cnn"], required=True,
                        help='Type of neural network.')
-argparser.add_argument("--cuda", True)
+argparser.add_argument("--cuda", default=True)
 argparser.add_argument("--data_dir", required=True)
-argparser.add_argument("--dataset", choices=["MNIST","CIFAR10"])
+argparser.add_argument("--dataset", choices=["MNIST","CIFAR10"], default=argparse.SUPPRESS)
 argparser.add_argument("--dims", type=str, default=argparse.SUPPRESS)
 argparser.add_argument('--eps', type=float, default=argparse.SUPPRESS)
 argparser.add_argument('--gradSteps', type=int, default=argparse.SUPPRESS)
-argparser.add_argument("--lr", )
-argparser.add_argument("--lr_pgd", )
-argparser.add_argument("--max_epochs", type=int, default=1_000)
-argparser.add_argument("--max_iter", type=int, default=100_000)
+argparser.add_argument("--lr", default=argparse.SUPPRESS)
+argparser.add_argument("--lr_pgd", default=argparse.SUPPRESS)
+argparser.add_argument("--max_epochs", type=int, default=argparse.SUPPRESS)
+argparser.add_argument("--max_iter", type=int, default=argparse.SUPPRESS)
 argparser.add_argument('--noRestarts', type=int, default=argparse.SUPPRESS)
-argparser.add_argument("--optimizer", choices=["adam", "rms", "sgd"])
-argparser.add_argument("--regularizer", choices=["no", "jac", "eig", "eigjac"])
+argparser.add_argument("--optimizer", choices=["adam", "rms", "sgd"], default=argparse.SUPPRESS)
+argparser.add_argument("--regularizer", choices=["no", "jac", "eig", "eigjac"], default="no")
 argparser.add_argument("--save_dir", required=True)
-argparser.add_argument("--trainer", choices= ["vanilla", "adv"] )
-argparser.add_argument("--training_type", choices=["FGSM", "PGD"])
-argparser.add_argument("--validate", type=bool, default=True)
-argparser.add_argument("--weight_decay", type=float, required=True)
-argparser.add_argument('--optimize', choices=['all','not_spectra'])
+argparser.add_argument("--trainer", choices= ["vanilla", "adv"], default="vanilla")
+argparser.add_argument("--training_type", choices=["FGSM", "PGD"], default=argparse.SUPPRESS)
+argparser.add_argument("--hpsearch", type=bool, default=True)
+argparser.add_argument("--weight_decay", type=float, default=0.)
+argparser.add_argument('--optimize', choices=['all','not_spectra'], default='all')
 
 argparser.add_argument('--smoke-test', action="store_true", default=False)
 
@@ -56,14 +55,19 @@ smoke_test = args['smoke_test']
 if args["architecture"] in ["LeNet5", "MadryMNIST"]:
     architecture = args["architecture"]
     what_to_optimize = args["optimize"]
-    [args.pop(k) for k in ['architecture', 'dims', 'optimize']]
+    [args.pop(k) for k in ['architecture', 'optimize']]
+    try:
+        args.pop("dims")
+    except:
+        pass
 args.pop('smoke_test')
 
 def train(config, reporter):
     import time, random; time.sleep(random.uniform(0., 10.))
+    from experiment import ex  # importing experiment here is crucial!
     if smoke_test:
         config = {'max_epochs': 1, **config}
-    ex.observers.append(MongoObserver.create(
+    ex.observers.append(MongoObserver(
         url='mongodb://powerLawNN:Pareto_a^-b@ackermann.memming.com/admin?authMechanism=SCRAM-SHA-1',
         db_name='powerLawHypers'))
     ex.run(named_configs=[architecture], config_updates={**args, **config})
@@ -80,10 +84,10 @@ if __name__ == '__main__':
     auth.set_access_token(access_token, access_token_secret)
     api = tweepy.API(auth)
 
-    ncalls = 50
+    budget = 1
 
     parameter_names = ['lr']
-    space = [Real(10 ** -9, 10 ** -1, "log-uniform", name='lr')]
+    space = [Real(10 ** -9, 10 ** -3, "log-uniform", name='lr')]
     if args['trainer'] == 'adv':
         pass
     if 'jac' in args['regularizer']:
@@ -113,7 +117,7 @@ if __name__ == '__main__':
         'my_experiment': {
             'run': 'train_func',
             'resources_per_trial': {"gpu": 1},
-            'num_samples': ncalls,
+            'num_samples': budget,
         }
     }, search_alg=algo, scheduler=scheduler)
 

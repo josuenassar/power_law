@@ -5,7 +5,6 @@ from copy import deepcopy
 from uuid import uuid4
 from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
-from torch import save
 from ModelDefs.utils import JacobianReg, counter, eigen_val_regulate, compute_eig_vectors_only
 from ModelDefs.BatchModfier import BatchModifier
 
@@ -15,7 +14,7 @@ class Trainer(nn.Module):
     def __init__(self, *, decoratee: BatchModifier, optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
         super(Trainer, self).__init__()
         self._batch_modifier = decoratee
-        self._save_name = save_name
+        self.save_name = save_name
         self.max_iter = max_iter
         self.no_minibatches = 0
         if optimizer.lower() == 'adam':
@@ -33,7 +32,7 @@ class Trainer(nn.Module):
         return self._batch_modifier(x)
 
     def train_epoch(self, X: DataLoader):
-        for _, (x, y) in enumerate(tqdm(X, desc="Training Batches", ascii=True, position=0, leave=True)):
+        for _, (x, y) in enumerate(tqdm(X, desc="Training Batches", ascii=True, position=1, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
             x.to('cpu')
             y.to('cpu')
@@ -55,7 +54,7 @@ class Trainer(nn.Module):
         loss = 0
         mce = 0
         with torch.no_grad():
-            for _, (x, y) in enumerate(tqdm(X, desc="Testing Batches", ascii=True, position=1, leave=True)):
+            for _, (x, y) in enumerate(tqdm(X, desc="Testing Batches", ascii=True, position=2, leave=False)):
                 loss_tmp, mce_tmp = self.evaluate_test_loss(x.to(self.device), y.to(self.device))
                 x.to('cpu')
                 y.to('cpu')
@@ -85,42 +84,49 @@ class Trainer(nn.Module):
         return (predicted != y.data).float().mean()
 
 # Utilities for serializing the model
-    def serialize_model_type(self, filename=None):
-        self._check_fname(filename)
-        # TODO dump model definition into JSON so we can read it easily later on
-        raise NotImplementedError
+#     def serialize_model_type(self, filename=None):
+#         self._check_fname(filename)
+#         # TODO dump model definition into JSON so we can read it easily later on
+#         raise NotImplementedError
 
-    @property
-    def save_name(self):
-        self.save_name = self._save_name
-
-    @save_name.setter
-    def save_name(self, name):
-        self._save_name = name
-
-    @save_name.getter
-    def save_name(self):
-        return self.save_name
-
-    def _check_fname(self, filename=None):
-        if filename is not None and self.save_name() is not None:
-            raise AssertionError('Save name has already been defined')
-        elif filename is not None and self.save_name is None:
-            self.save_name(filename)
-        elif filename is None and self.save_name is not None:
-            return self.save_name
-        else:
-            filename = str(uuid4())[:8]
-            self._check_fname(filename)
+    # @property
+    # def save_name(self):
+    #     self.save_name = self._save_name
+    #
+    # @save_name.setter
+    # def save_name(self, name):
+    #     self._save_name = name
+    #
+    # @save_name.getter
+    # def save_name(self):
+    #     return self.save_name
+    #
+    # def _check_fname(self, filename=None):
+    #     if filename is not None and self.save_name() is not None:
+    #         raise AssertionError('Save name has already been defined')
+    #     elif filename is not None and self.save_name is None:
+    #         self.save_name(filename)
+    #     elif filename is None and self.save_name is not None:
+    #         return self.save_name
+    #     else:
+    #         filename = str(uuid4())[:8]
+    #         self._check_fname(filename)
 
     def save(self, filename=None, other_vars=None):
-        self._check_fname(filename)
+        if self.save_name is None and filename is None:
+            self.save_name = str(uuid4())[:8]
+        elif filename is not None:
+            self.save_name = filename
         # TODO: add get cwd
-        dummy_model = deepcopy(self)
-        model_data = {'parameters': dummy_model.cpu().state_dict()}
+        model_data = {'parameters': self._architecture.cpu().state_dict()}
+        if isinstance(self, EigenvalueRegularization):
+            other_vars = {**other_vars, "eig_vec": self.eig_vec.cpu()}
         if other_vars is not None:
             model_data = {**model_data, **other_vars}
-        save(model_data, self.save_name)
+        self._architecture.to(self.device,  non_blocking=True)
+        if isinstance(self, EigenvalueRegularization):
+            self.eig_vec.to(self.device, non_blocking=True)
+        torch.save(model_data, self.save_name)
 
     def __getattr__(self, item):
         try:
@@ -223,7 +229,7 @@ class EigenvalueRegularization(Trainer):
         self.compute_eig_vectors(X_full.to(self.device))
         X_full.to('cpu', non_blocking=True)
 
-        for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=2, leave=True)):
+        for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=1, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
             # x.to('cpu', async=True)
             # y.to('cpu')

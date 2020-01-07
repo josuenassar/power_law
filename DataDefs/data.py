@@ -10,9 +10,10 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
     validation_split = 10_000
     kwargs = {'num_workers': 16, 'pin_memory': True}
     if dataset == "MNIST":
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))])
-        train_set = datasets.MNIST(root=data_dir, train=True, download=True, transform=transform)
-        test_set = datasets.MNIST(root=data_dir, train=False, download=True, transform=transform)
+        transform = transforms.Compose([transforms.ToTensor()])
+        # , transforms.Normalize((0.1307,), (0.3081,))]
+        train_set = datasets.MNIST(root=data_dir, train=True, download=True,  transform=transform)
+        test_set = datasets.MNIST(root=data_dir, train=False, download=True,  transform=transform)
         num_train = len(train_set)
         indices = list(range(num_train))
         if not validate:
@@ -28,11 +29,12 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
             test_loader = DataLoader(train_set, batch_size=batch_size, sampler=test_sampler, **kwargs)
 
     elif dataset == "CIFAR10":  # TODO: copy data augmentation from Madry's paper
-        transform = transforms.Compose([transforms.ToTensor(), transforms.Normalize((0.49137255, 0.48235294,
-                                                                                     0.44666667),
-                             (0.24705882, 0.24352941, 0.26156863))])
-        train_set = datasets.CIFAR10(root=data_dir, train=True, download=True, transform=transform)
-        test_set = datasets.CIFAR10(root=data_dir, train=False, download=True, transform=transform)
+        transform = transforms.Compose([transforms.ToTensor()])
+        # , transforms.Normalize((0.49137255, 0.48235294,
+        #                                                                              0.44666667),
+        #                      (0.24705882, 0.24352941, 0.26156863))])
+        train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=transform)
+        test_set = datasets.CIFAR10(root=data_dir, train=False, download=True,  transform=transform)
         num_train = len(train_set)
         indices = list(range(num_train))
         if not validate:
