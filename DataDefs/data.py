@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 import numpy as np
 from trainers import EigenvalueRegularization
-data_dir = '../'
+data_dir = '../../'
 
 
 def get_data(dataset, batch_size, _seed, validate):

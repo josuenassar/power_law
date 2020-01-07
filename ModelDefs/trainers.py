@@ -6,8 +6,8 @@ from uuid import uuid4
 from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
 from torch import save
-from utils import JacobianReg, counter, compute_eig_vectors, eigen_val_regulate, compute_eig_vectors_only
-from BatchModfier import BatchModifier
+from ModelDefs.utils import JacobianReg, counter, eigen_val_regulate, compute_eig_vectors_only
+from ModelDefs.BatchModfier import BatchModifier
 
 
 class Trainer(nn.Module):

@@ -4,9 +4,9 @@ import unittest
 import os
 
 from torch.utils.data.dataloader import DataLoader
-from architectures import MLP, CNN
-from BatchModfier import AdversarialTraining, MLTraining
-from trainers import NoRegularization, JacobianRegularization,\
+from ModelDefs.architectures import MLP, CNN
+from ModelDefs.BatchModfier import AdversarialTraining, MLTraining
+from ModelDefs.trainers import NoRegularization, JacobianRegularization,\
     EigenvalueAndJacobianRegularization, EigenvalueRegularization
 
 
@@ -104,6 +104,7 @@ class TestModel(unittest.TestCase):
         L_post, mce_post = model.evaluate_dataset_test_loss(test_loader)
         self.assertLess(L_post.item(), L_pre.item())
         self.assertLess(mce_post.item(), mce_pre.item())
+
 
 if __name__ == '__main__':
     unittest.main()

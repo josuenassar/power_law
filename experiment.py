@@ -1,10 +1,9 @@
 import torch
-from models import ModelFactory  # Since we don't need the internals
-from data import GetDataForModel
+from ModelDefs.models import ModelFactory  # Since we don't need the internals
+from DataDefs.data import GetDataForModel
 
 # Sacred
 from sacred import Experiment
-from sacred.observers import MongoObserver
 # Imports for Serializing and Saving
 from random_words import RandomWords
 import random
@@ -15,21 +14,23 @@ from tqdm import tqdm
 
 rw = RandomWords()
 ex = Experiment(name=rw.random_word() + str(random.randint(0, 100)))
-
-ex.observers.append(MongoObserver(
-    url='mongodb://powerLawNN:Pareto_a^-b@ackermann.memming.com/admin?authMechanism=SCRAM-SHA-1',
-    db_name='powerLawExpts'))
+#
+# ex.observers.append(MongoObserver(
+#     url='mongodb://powerLawNN:Pareto_a^-b@ackermann.memming.com/admin?authMechanism=SCRAM-SHA-1',
+#     db_name='powerLawExpts'))
 ##
+
+
 @ex.named_config
-def large_cnn():
+def LeNet5():
     """
     To avoid passing lengthy architecture definitions we can use this as a convenience function
-    architecture = "cnn"
-    dims = [1, (1, 28), (4032, 128), (128, 10)]
 
     The function only modifies the contents of the baseline configuration in experiment.cfg (below)
     """
-    raise NotImplementedError
+    architecture = "cnn"
+    dims = [1, (1, 28), (4032, 128), (128, 10)]
+
 
 @ex.config
 def cfg():
@@ -69,7 +70,10 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
     model = ModelFactory(**model_kwargs)
     # Store where model should be saved
     if save_dir is not None:
-        model.save_name = os.path.join(save_dir, str(uuid4())[:8])
+        if os.path.isdir(save_dir):
+            model.save_name = os.path.join(save_dir, str(uuid4())[:8])
+        else:
+            model.save_name = save_dir
     # This ensures that any trained model will save the training loss for each mini-batch
     if _run is not None:
         model.logger = _run
@@ -96,7 +100,6 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
 
 # def parser():
 #     import argparse
-#
 #     argparser = argparse.ArgumentParser()
 #     argparser.add_argument('--batch_size', default=200, type=int)
 #     argparser.add_argument('--lr', default=1e-3, type=float)
