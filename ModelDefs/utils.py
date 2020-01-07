@@ -154,7 +154,8 @@ def compute_eig_vectors(x, y, model, loss, device):
         cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
         cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
         cov = (cov + cov.transpose(1, 0)) / 2
-        _, eigTemp, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+        # _, eigTemp, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+        eigTemp, vecTemp = torch.symeig(cov, eigenvectors=True)
         eig_T = eigTemp.float()
         vecTemp = vecTemp.float()
         eigTemp, rT = eigen_val_regulate(0, 0, eig_T, device)  # compute regularizer
@@ -173,7 +174,8 @@ def compute_eig_vectors_only(hidden):
         cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
         cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
         cov = (cov + cov.transpose(1, 0)) / 2
-        _, _, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+        # _, _, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+        _, vecTemp = torch.symeig(cov, eigenvectors=True)
         vecTemp = vecTemp.float()
         eigVec.append(vecTemp)
 
