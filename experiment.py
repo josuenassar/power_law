@@ -120,5 +120,7 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
             _run.log_scalar("testLoss", float(mean_ll))
             _run.log_scalar("testAccuracy", float(1-mean_mce))
         model.train_epoch(train_loader)
+        model.save()
+        _run.add_artifact(model.save_name, "model_data.pt", content_type="application/octet-stream")
 
     return 1-mean_mce  # holdout accuracy

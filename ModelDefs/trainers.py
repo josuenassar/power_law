@@ -116,7 +116,7 @@ class Trainer(nn.Module):
     def save(self, filename=None, other_vars=None):
         self._check_fname(filename)
         # TODO: add get cwd
-        dummy_model = deepcopy(self.model)
+        dummy_model = deepcopy(self)
         model_data = {'parameters': dummy_model.cpu().state_dict()}
         if other_vars is not None:
             model_data = {**model_data, **other_vars}
