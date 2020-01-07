@@ -1,5 +1,3 @@
-import sys
-sys.path.append('../ModelDefs/')
 import torch
 import torch.nn as nn
 from torch.optim import Adam, SGD, rmsprop
@@ -12,7 +10,7 @@ from uuid import uuid4
 from tqdm import tqdm
 from typing import Callable, Union
 from torch.utils.data.dataloader import DataLoader
-import models
+import ModelDefs.models as models
 from torchvision import datasets, transforms
 
 
@@ -44,7 +42,7 @@ def train_bad_boys(lr=1e-3, alpha_eig=0, alpha_jacob=0, eps=0, seed=0, cuda=Fals
     model_kwargs = {"dims": dims, "activation": nonlin, "architecture": arch,
               "trainer": trainer, "regularizer": "no", 'alpha_spectra': alpha_eig, 'alpha_jacob': alpha_jacob,
               'optimizer': 'adam', 'lr': lr, 'weight_decay': weight_decay, 'cuda': cuda,
-              'eps': eps,  'training_type': 'FGSM'}
+              'eps': eps,  'training_type': 'FGSM', 'lr_pgd': 0, 'gradSteps': 0, 'noRestarts': 0}
     model = models.ModelFactory(**model_kwargs)
 
     # In[]
@@ -87,7 +85,7 @@ def train_bad_boys(lr=1e-3, alpha_eig=0, alpha_jacob=0, eps=0, seed=0, cuda=Fals
     model_data = {'params': model.cpu().state_dict(),
                   'kwargs': model_kwargs,
                   'test_loss': test_acc}
-    save_file_name = save_dir + nonlin + 'seed=' + str(seed) + trainer + 'alpha_eig' \
-                     + str(alpha_eig) + 'alpha_jacob' + str(alpha_jacob)
+    save_file_name = save_dir + '_' + nonlin + '_' + 'seed=' + str(seed) + '_' + trainer + '_' + 'alpha_eig' \
+                     + '_' + str(alpha_eig) + '_' + 'alpha_jacob' + '_' + str(alpha_jacob)
     torch.save(model_data, save_file_name)
 
