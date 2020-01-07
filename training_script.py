@@ -1,20 +1,11 @@
 import torch
-import torch.nn as nn
-from torch.optim import Adam, SGD, rmsprop
-import numpy as np
-import inspect
-from functools import wraps
-import copy
-from copy import deepcopy
-from uuid import uuid4
 from tqdm import tqdm
-from typing import Callable, Union
-from torch.utils.data.dataloader import DataLoader
 import ModelDefs.models as models
 from torchvision import datasets, transforms
+import fire
 
 
-def train_bad_boys(lr=1e-3, alpha_eig=0, alpha_jacob=0, eps=0, seed=0, cuda=False,
+def train_bad_boys(lr=1e-3, alpha_eig=0, alpha_jacob=0, eps=0.5, seed=0, cuda=False,
                    save_dir='../data/', nonlin='tanh', max_epochs=1000, weight_decay=0,
                    dims=[1, (1, 28), (4032, 128), (128, 10)], arch='cnn'):
     torch.manual_seed(seed)  # seed random number generator
@@ -89,3 +80,5 @@ def train_bad_boys(lr=1e-3, alpha_eig=0, alpha_jacob=0, eps=0, seed=0, cuda=Fals
                      + '_' + str(alpha_eig) + '_' + 'alpha_jacob' + '_' + str(alpha_jacob)
     torch.save(model_data, save_file_name)
 
+if __name__ == '__main__':
+    fire.Fire(train_bad_boys)
