@@ -32,6 +32,17 @@ def LeNet5():
     dims = [1, (1, 28), (4032, 128), (128, 10)]
 
 
+@ex.named_config
+def MadryMNIST():
+    """
+    To avoid passing lengthy architecture definitions we can use this as a convenience function
+
+    The function only modifies the contents of the baseline configuration in experiment.cfg (below)
+    """
+    architecture = "cnn"
+    dims = [2, (1, 32), (32, 64), (1024, 1024), (1024, 10)]
+
+
 @ex.config
 def cfg():
     activation = "tanh"
