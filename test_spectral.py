@@ -22,7 +22,11 @@ from torchvision import datasets, transforms
 kwargs = {"dims": [(28 * 28, 1000), (1000, 10)], "activation": "relu", "architecture": "mlp",
           "trainer": "adv", "regularizer": "no", 'alpha_spectra': 1e-3, 'alpha_jacob':1e-4,
           'optimizer': 'adam', 'lr': 1e-3, 'weight_decay': 1e-5, 'cuda': False, 'eps': 0.1,
-          'gradSteps': 1, 'noRestarts': 0, 'alpha': 0, 'training_type': 'FGSM'}
+          'gradSteps': 3, 'noRestarts': 2, 'alpha': 0, 'training_type': 'PGD'}
+# kwargs = {"dims": [1, (1, 28), (4032, 128), (128, 10)], "activation": "relu", "architecture": "cnn",
+#           "trainer": "vanilla", "regularizer": "no", 'alpha_spectra': 1e-3, 'alpha_jacob':1e-4,
+#           'optimizer': 'adam', 'lr': 1e-3, 'weight_decay': 1e-5, 'cuda': True, 'eps': 0.5,
+#           'gradSteps': 40, 'noRestarts': 2, 'alpha': 0.1, 'training_type': 'PGD'}
 model = models.ModelFactory(**kwargs)
 
 
@@ -35,7 +39,7 @@ test_set = datasets.MNIST(root=os.getcwd(), train=False, download=True, transfor
 num_train = len(train_set)
 indices = list(range(num_train))
 train_sampler = torch.utils.data.sampler.SubsetRandomSampler(indices)
-batch_size = 1_200
+batch_size = 128
 train_loader = torch.utils.data.DataLoader(train_set, batch_size=batch_size, sampler=train_sampler,
                                            **kwargs)
 test_loader = torch.utils.data.DataLoader(test_set, batch_size=batch_size, shuffle=False, **kwargs)
