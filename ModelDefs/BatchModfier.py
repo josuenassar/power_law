@@ -27,7 +27,7 @@ class AdversarialTraining(BatchModifier):
         super(AdversarialTraining, self).__init__(decoratee=decoratee)
         self.eps = eps  # radius of l infinity ball
         # self.lr = alpha.to(decoratee.device)
-        self.lr = alpha
+        self.lr = lr_pgd
         self.gradSteps = gradSteps  # number of gradient steps to take
         self.noRestarts = noRestarts  # number of restarts
         if training_type == 'FGSM':
