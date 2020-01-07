@@ -213,11 +213,11 @@ class EigenvalueRegularization(Trainer):
             spectra_regul += rTemp
         return spectra_regul
 
-    def train_epoch(self, X: DataLoader, X_full=None, Y_full=None):
+    def train_epoch(self, X: DataLoader, X_full=None):
 
-        if X_full is None and Y_full is None and self.eig_loader is None:
+        if X_full is None and self.eig_loader is None:
             self.add_eig_loader(X)
-        elif X_full is None and Y_full is None and self.eig_loader is not None:
+        elif X_full is None and self.eig_loader is not None:
             X_full, _ = next(iter(self.eig_loader))
 
         self.compute_eig_vectors(X_full.to(self.device))
