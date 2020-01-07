@@ -1,5 +1,5 @@
 import sys
-sys.path.append('../')
+sys.path.append('../ModelDefs/')
 import torch
 import torch.nn as nn
 from torch.optim import Adam, SGD, rmsprop
