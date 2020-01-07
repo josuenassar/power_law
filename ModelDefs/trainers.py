@@ -231,7 +231,7 @@ class EigenvalueRegularization(Trainer):
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
-                 weight_decay=1e-5, alpha_spectra, alpha_jacob, n=-1):
+                 weight_decay=1e-5, alpha_spectra, alpha_jacob, n=1):
         super(EigenvalueAndJacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
                                                        lr=lr, weight_decay=weight_decay, max_iter=max_iter,
                                                        save_name=save_name, alpha_spectra=alpha_spectra)
