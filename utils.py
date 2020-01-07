@@ -212,4 +212,4 @@ def eigen_val_regulate(x, v, eigT=None, start=10, device='cpu'):
     for n in range(start + 1, eigs.shape[0]):
         if eigs[n] > 0:  # don't use negative eigenvalues
             regul += (eigs[n] / (alpha / (n + 1)) - 1) ** 2 + torch.relu(eigs[n] / (alpha / (n + 1)) - 1)
-    return eigs, regul / x.shape[0]
+    return eigs, regul / x.shape[1]
