@@ -4,9 +4,9 @@ import unittest
 import os
 
 from torch.utils.data.dataloader import DataLoader
-from architectures import MLP, CNN
-from BatchModfier import AdversarialTraining, MLTraining
-from trainers import NoRegularization, JacobianRegularization,\
+from ModelDefs.architectures import MLP, CNN
+from ModelDefs.BatchModfier import AdversarialTraining, MLTraining
+from ModelDefs.trainers import NoRegularization, JacobianRegularization,\
     EigenvalueAndJacobianRegularization, EigenvalueRegularization
 
 

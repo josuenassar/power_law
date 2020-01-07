@@ -6,8 +6,8 @@ from uuid import uuid4
 from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
 from torch import save
-from utils import JacobianReg, counter, eigen_val_regulate, compute_eig_vectors_only
-from BatchModfier import BatchModifier
+from ModelDefs.utils import JacobianReg, counter, eigen_val_regulate, compute_eig_vectors_only
+from ModelDefs.BatchModfier import BatchModifier
 
 
 class Trainer(nn.Module):
@@ -33,7 +33,7 @@ class Trainer(nn.Module):
         return self._batch_modifier(x)
 
     def train_epoch(self, X: DataLoader):
-        for _, (x, y) in enumerate(tqdm(X)):
+        for _, (x, y) in enumerate(tqdm(X, desc="Training Batches", ascii=True, position=0, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
             x.to('cpu')
             y.to('cpu')
@@ -55,7 +55,7 @@ class Trainer(nn.Module):
         loss = 0
         mce = 0
         with torch.no_grad():
-            for _, (x, y) in enumerate(tqdm(X)):
+            for _, (x, y) in enumerate(tqdm(X, desc="Testing Batches", ascii=True, position=1, leave=True)):
                 loss_tmp, mce_tmp = self.evaluate_test_loss(x.to(self.device), y.to(self.device))
                 x.to('cpu')
                 y.to('cpu')
@@ -194,7 +194,7 @@ class EigenvalueRegularization(Trainer):
         "Compute spectra regularizer"
         return loss + self.alpha_spectra * self.spectra_regularizer(hidden)
 
-    def compute_eig_vectors(self, x, y):
+    def compute_eig_vectors(self, x):
         with torch.no_grad():
             hidden, _ = self.bothOutputs(x)
             eigVec = compute_eig_vectors_only(hidden)
@@ -218,16 +218,15 @@ class EigenvalueRegularization(Trainer):
         if X_full is None and Y_full is None and self.eig_loader is None:
             self.add_eig_loader(X)
         elif X_full is None and Y_full is None and self.eig_loader is not None:
-            X_full, Y_full = next(iter(self.eig_loader))
+            X_full, _ = next(iter(self.eig_loader))
 
-        self.compute_eig_vectors(X_full, Y_full)
-        X_full.to('cpu')
-        Y_full.to('cpu')
-        for _, (x, y) in enumerate(tqdm(X)):
+        self.compute_eig_vectors(X_full.to(self.device))
+        X_full.to('cpu', non_blocking=True)
+
+        for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=2, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
-            x.to('cpu')
-            y.to('cpu')
-        # raise NotImplementedError
+            # x.to('cpu', async=True)
+            # y.to('cpu')
 
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
