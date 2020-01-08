@@ -43,7 +43,7 @@ for stuff in stuff_to_loop_over:
     if socket.gethostname() == 'dirac':
         reg, tr = stuff
         cmds = ['python',
-                tmp_dir + tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
+                tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
                 '--architecture', 'MadryMNIST',
                 '--save_dir', '',
                 '--data_dir', '',
