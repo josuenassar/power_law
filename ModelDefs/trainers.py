@@ -120,12 +120,12 @@ class Trainer(nn.Module):
         # TODO: add get cwd
         model_data = {'parameters': self._architecture.cpu().state_dict()}
         if isinstance(self, EigenvalueRegularization):
-            other_vars = {**other_vars, "eig_vec": self.eig_vec.cpu()}
+            other_vars = {**other_vars, "eig_vec": [v.cpu() for v in self.eig_vec] }
         if other_vars is not None:
             model_data = {**model_data, **other_vars}
         self._architecture.to(self.device,  non_blocking=True)
         if isinstance(self, EigenvalueRegularization):
-            self.eig_vec.to(self.device, non_blocking=True)
+            [v.to(self.device,  non_blocking=True) for v in self.eig_vec]
         torch.save(model_data, self.save_name)
 
     def __getattr__(self, item):
