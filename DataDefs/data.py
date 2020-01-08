@@ -59,10 +59,10 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
     return train_loader, test_loader, full_loader
 
 
-def GetDataForModel(model, dataset, _seed, validate=False, batch_size=None, data_dir='../../'):
+def GetDataForModel(model, *, dataset, _seed, hpsearch=False, batch_size=None, data_dir='../../'):
     if batch_size is None:
         batch_size = int(1.05 * model.max_neurons)
-    train_loader, test_loader, full_loader = get_data(dataset, batch_size, _seed, validate, data_dir)
+    train_loader, test_loader, full_loader = get_data(dataset, batch_size, _seed, hpsearch, data_dir)
     if isinstance(model, EigenvalueRegularization):
         model.eig_loader = full_loader
     return train_loader, test_loader

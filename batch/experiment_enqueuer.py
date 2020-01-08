@@ -16,12 +16,12 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 if socket.gethostname() == 'dirac':
     regularization = ["no", "jac"]
     trainer = ["vanilla", "adv"]
-    stuff_to_loop_over = product([regularization, trainer])
+    stuff_to_loop_over = product(regularization, trainer)
 elif socket.gethostname() == 'erdos':
     regularization = ["eig", "eigjac"]
     trainer = ["vanilla", "adv"]
     alpha_spectra = [1e-4, 1e-3, 1e-2, 1e-1]
-    stuff_to_loop_over = product([regularization, trainer, alpha_spectra])
+    stuff_to_loop_over = product(regularization, trainer, alpha_spectra)
 
 
 connection=Redis()
@@ -43,12 +43,17 @@ for stuff in stuff_to_loop_over:
     if socket.gethostname() == 'dirac':
         reg, tr = stuff
         cmds = ['python',
-                tmp_dir + '/power_law/ray_hyperparam_experimenter.py --regularizer {} --trainer {}'.format(reg, tr),
+                tmp_dir + tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
+                '--architecture', 'MadryMNIST',
+                '--save_dir', '',
+                '--data_dir', '',
+                '--regularizer', str(reg), '--trainer', str(tr),
                 ';', 'rm', '-rf', tmp_dir]
     elif socket.gethostname() == 'erdos':
         reg, tr, alpha = stuff
         cmds = ['python',
-                tmp_dir + '/power_law/ray_hyperparam_experimenter.py --regularizer {} --trainer {} --alpha_spectra {}'.format(reg, tr, alpha),
+                tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
+                '--regularizer', str(reg), '--trainer', str(tr), '--alpha_spectra', str(alpha),
                 ';', 'rm', '-rf', tmp_dir]
 
     kwargs = { "dir": os.path.join(tmp_dir,'power_law')}

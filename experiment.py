@@ -102,7 +102,7 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
     # Takes a model, dataset and bool indicating whether the model should be evaluated against the test set or a
     # validation subsample of the training set
     # tv_loader is shorthand for train_ or validation_ loader'
-    train_loader, tv_loader = GetDataForModel(model, dataset, hpsearch, data_dir)
+    train_loader, tv_loader = GetDataForModel(model, dataset=dataset, _seed=_seed, hpsearch=hpsearch, data_dir=data_dir)
     for epoch in tqdm(range(max_epochs), desc="Epochs", ascii=True, position=0, leave=True):
         """
         Model should be tested for test or validation accuracy & loss; the results should be logged in the logger
