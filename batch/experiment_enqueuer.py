@@ -45,14 +45,17 @@ for stuff in stuff_to_loop_over:
         cmds = ['python',
                 tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
                 '--architecture', 'MadryMNIST',
-                '--save_dir', '',
-                '--data_dir', '',
+                '--save_dir', str(BASEPATH),
+                '--data_dir', str(data_dir),
                 '--regularizer', str(reg), '--trainer', str(tr),
                 ';', 'rm', '-rf', tmp_dir]
     elif socket.gethostname() == 'erdos':
         reg, tr, alpha = stuff
         cmds = ['python',
                 tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
+                '--architecture', 'MadryMNIST',
+                '--save_dir', str(BASEPATH),
+                '--data_dir', str(data_dir),
                 '--regularizer', str(reg), '--trainer', str(tr), '--alpha_spectra', str(alpha),
                 ';', 'rm', '-rf', tmp_dir]
 
