@@ -63,7 +63,7 @@ def cfg():
     gradSteps = 40  # 40 for MNIST
     lr = 1e-4
     lr_pgd = 1e-2  # TODO: add PGD learning rate
-    max_epochs = 3
+    max_epochs = 500
     max_iter = 100_000
     noRestarts = 1  # compare to results in https://arxiv.org/pdf/1706.06083.pdf page 13 (should give  ~ 93% accuracy)
     optimizer = "adam"
@@ -118,7 +118,7 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
         model.save()  # TODO: Error in save function
         save_name_for_db = "model_data_{}.pt".format(epoch)
         _run.add_artifact(model.save_name, save_name_for_db, content_type="application/octet-stream")
-        # if hpsearch:
-        #     os.remove(model.save_name)
+        if hpsearch:
+            os.remove(model.save_name)
 
     return float(1-mean_mce)  # holdout accuracy

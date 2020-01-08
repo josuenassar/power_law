@@ -11,9 +11,10 @@ import argparse
 # import os
 import socket
 from sacred.observers import MongoObserver
-
+from multiprocessing import cpu_count
 
 nGPU = device_count()
+nCPU = int(cpu_count()/nGPU)
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--activation",  choices=['relu', 'tanh'],
@@ -75,14 +76,6 @@ def train(config, reporter):
     reporter(result=result, done=True)
 
 if __name__ == '__main__':
-    import tweepy
-    consumer_key = "emYE7xtZ3gdw48OuGyQ50xTXB"
-    consumer_secret = "lEQRqnXLkT3Hh2V8fZ5gCOoUslJeXj0wzWnTupkabEgNkIVCOg"
-    access_token = "1007403120899579904-veqrICIYFfSnfYtvWcb7oryiuWXc2h"
-    access_token_secret = "eimBG9y1nd6bawHZGmwQf2dkQRhRPWK4R1X6yQ6eq0lZq"
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    api = tweepy.API(auth)
 
     budget = 1
 
@@ -96,8 +89,8 @@ if __name__ == '__main__':
     if 'eig' in args['regularizer'] and what_to_optimize == 'all':
         parameter_names.append('alpha_spectra')
         space.append([Real(10 ** -8, 10 ** 1, "log-uniform", name='alpha_spectra')])
-
-    ray.init(num_gpus=nGPU)
+    ray.shutdown()  # Restart Ray defensively in case the ray connection is lost.
+    ray.init(num_gpus=nGPU, num_cpus=cpu_count())
     optimizer = Optimizer(
         dimensions=space,
         random_state=1,
@@ -111,14 +104,7 @@ if __name__ == '__main__':
         mode="max")
 
     scheduler = FIFOScheduler()
-    tune.register_trainable("train_func", train)
-
-    tune.run_experiments({
-        'my_experiment': {
-            'run': 'train_func',
-            'resources_per_trial': {"gpu": 1},
-            'num_samples': budget,
-        }
-    }, search_alg=algo, scheduler=scheduler)
-
-    api.update_status(status="Finished hyperparam sweep for power_law on {}".format(socket.gethostname()))
+    my_little_output = tune.register_trainable("train_func", train)
+    # import pdb; pdb.set_trace()
+    tune.run( "train_func", resources_per_trial={"gpu": 1, "cpu" : nCPU},
+        num_samples=budget, search_alg=algo, scheduler=scheduler)
