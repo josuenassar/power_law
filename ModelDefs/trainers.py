@@ -112,7 +112,7 @@ class Trainer(nn.Module):
     #         filename = str(uuid4())[:8]
     #         self._check_fname(filename)
 
-    def save(self, filename=None, other_vars=None):
+    def save(self, filename=None, other_vars=dict()):
         if self.save_name is None and filename is None:
             self.save_name = str(uuid4())[:8]
         elif filename is not None:
@@ -120,12 +120,14 @@ class Trainer(nn.Module):
         # TODO: add get cwd
         model_data = {'parameters': self._architecture.cpu().state_dict()}
         if isinstance(self, EigenvalueRegularization):
-            other_vars = {**other_vars, "eig_vec": [v.cpu() for v in self.eig_vec] }
+            if self.eig_vec[0] is not None:
+                other_vars = {**other_vars, "eig_vec": [v.cpu() for v in self.eig_vec] }
         if other_vars is not None:
             model_data = {**model_data, **other_vars}
         self._architecture.to(self.device,  non_blocking=True)
         if isinstance(self, EigenvalueRegularization):
-            [v.to(self.device,  non_blocking=True) for v in self.eig_vec]
+            if self.eig_vec[0] is not None:
+                [v.to(self.device,  non_blocking=True) for v in self.eig_vec]
         torch.save(model_data, self.save_name)
 
     def __getattr__(self, item):

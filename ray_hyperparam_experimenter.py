@@ -44,7 +44,6 @@ argparser.add_argument("--weight_decay", type=float, default=0.)
 argparser.add_argument('--optimize', choices=['all','not_spectra'], default='not_spectra')
 
 argparser.add_argument('--smoke-test', action="store_true", default=False)
-
 args, unknownargs = argparser.parse_known_args()
 args = vars(args)
 try :
@@ -89,7 +88,7 @@ if __name__ == '__main__':
     if 'eig' in args['regularizer'] and what_to_optimize == 'all':
         parameter_names.append('alpha_spectra')
         space.append([Real(10 ** -8, 10 ** 1, "log-uniform", name='alpha_spectra')])
-    ray.shutdown()  # Restart Ray defensively in case the ray connection is lost.
+
     ray.init(num_gpus=nGPU, num_cpus=cpu_count())
     optimizer = Optimizer(
         dimensions=space,
@@ -105,6 +104,5 @@ if __name__ == '__main__':
 
     scheduler = FIFOScheduler()
     my_little_output = tune.register_trainable("train_func", train)
-    # import pdb; pdb.set_trace()
     tune.run( "train_func", resources_per_trial={"gpu": 1, "cpu" : nCPU},
         num_samples=budget, search_alg=algo, scheduler=scheduler)
