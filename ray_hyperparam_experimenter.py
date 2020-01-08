@@ -31,7 +31,7 @@ argparser.add_argument('--eps', type=float, default=argparse.SUPPRESS)
 argparser.add_argument('--gradSteps', type=int, default=argparse.SUPPRESS)
 argparser.add_argument("--lr", default=argparse.SUPPRESS)
 argparser.add_argument("--lr_pgd", default=argparse.SUPPRESS)
-argparser.add_argument("--max_epochs", type=int, default=argparse.SUPPRESS)
+argparser.add_argument("--max_epochs", type=int, default=10)
 argparser.add_argument("--max_iter", type=int, default=argparse.SUPPRESS)
 argparser.add_argument('--noRestarts', type=int, default=argparse.SUPPRESS)
 argparser.add_argument("--optimizer", choices=["adam", "rms", "sgd"], default=argparse.SUPPRESS)
@@ -77,7 +77,7 @@ def train(config, reporter):
 
 if __name__ == '__main__':
 
-    budget = 1
+    budget = 50
 
     parameter_names = ['lr']
     space = [Real(10 ** -9, 10 ** -3, "log-uniform", name='lr')]
