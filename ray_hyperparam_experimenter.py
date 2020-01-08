@@ -40,7 +40,7 @@ argparser.add_argument("--trainer", choices= ["vanilla", "adv"], default="vanill
 argparser.add_argument("--training_type", choices=["FGSM", "PGD"], default=argparse.SUPPRESS)
 argparser.add_argument("--hpsearch", type=bool, default=True)
 argparser.add_argument("--weight_decay", type=float, default=0.)
-argparser.add_argument('--optimize', choices=['all','not_spectra'], default='all')
+argparser.add_argument('--optimize', choices=['all','not_spectra'], default='not_spectra')
 
 argparser.add_argument('--smoke-test', action="store_true", default=False)
 
