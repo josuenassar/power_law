@@ -13,8 +13,8 @@ BASEPATH = os.path.dirname(os.getcwd())
 data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abspath
 
 # Make top level directories
-if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
-    regularization = ["no", "jac"]
+if socket.gethostname() in ['dirac']:
+    regularization = ["jac"]
     trainer = ["vanilla", "adv"]
     stuff_to_loop_over = product(regularization, trainer)
 elif socket.gethostname() == 'erdos':
@@ -22,7 +22,10 @@ elif socket.gethostname() == 'erdos':
     trainer = ["vanilla", "adv"]
     alpha_spectra = [1e-4, 1e-3, 1e-2, 1e-1]
     stuff_to_loop_over = product(regularization, trainer, alpha_spectra)
-
+elif socket.gethostname() == 'catniplab-Alienware':
+    regularization = ["no"]
+    trainer = ["vanilla", "adv"]
+    stuff_to_loop_over = product(regularization, trainer)
 
 connection=Redis()
 gpu = Queue('gpu',connection=connection)
