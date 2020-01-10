@@ -79,7 +79,7 @@ if __name__ == '__main__':
     budget = 50
 
     parameter_names = ['lr']
-    space = [Real(10 ** -9, 10 ** -3, "log-uniform", name='lr')]
+    space = [Real(10 ** -9, 10 ** -1, "log-uniform", name='lr')]
     if args['trainer'] == 'adv':
         pass
     if 'jac' in args['regularizer']:

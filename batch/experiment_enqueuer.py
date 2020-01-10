@@ -13,7 +13,7 @@ BASEPATH = os.path.dirname(os.getcwd())
 data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abspath
 
 # Make top level directories
-if socket.gethostname() == 'dirac':
+if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
     regularization = ["no", "jac"]
     trainer = ["vanilla", "adv"]
     stuff_to_loop_over = product(regularization, trainer)
@@ -40,7 +40,7 @@ for stuff in stuff_to_loop_over:
     arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-r", "-l"], {"exclude": '"data/"'})
     subprocess.call(" ".join(arg), shell=True)
 
-    if socket.gethostname() == 'dirac':
+    if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
         reg, tr = stuff
         cmds = ['python',
                 tmp_dir + 'power_law/ray_hyperparam_experimenter.py',
@@ -49,6 +49,7 @@ for stuff in stuff_to_loop_over:
                 '--data_dir', str(data_dir),
                 '--regularizer', str(reg), '--trainer', str(tr),
                 ';', 'rm', '-rf', tmp_dir]
+        # cmds = ['python','-c','import time;','time.sleep(30)']
     elif socket.gethostname() == 'erdos':
         reg, tr, alpha = stuff
         cmds = ['python',
@@ -61,7 +62,7 @@ for stuff in stuff_to_loop_over:
 
     kwargs = { "dir": os.path.join(tmp_dir,'power_law')}
 
-    ttl = 1# infinite time in queue
+    ttl = None# infinite time in queue
     queue.enqueue_call(func=subprocs_exec,
                         args=(cmds,kwargs),
                         timeout='14d', ttl=ttl,
