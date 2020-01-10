@@ -84,10 +84,10 @@ if __name__ == '__main__':
         pass
     if 'jac' in args['regularizer']:
         parameter_names.append('alpha_jacob')
-        space.append([Real(10 ** -8, 10 ** 1, "log-uniform", name='alpha_jacob')])
+        space.append(Real(10 ** -8, 10 ** 1, "log-uniform", name='alpha_jacob'))
     if 'eig' in args['regularizer'] and what_to_optimize == 'all':
         parameter_names.append('alpha_spectra')
-        space.append([Real(10 ** -8, 10 ** 1, "log-uniform", name='alpha_spectra')])
+        space.append(Real(10 ** -8, 10 ** 1, "log-uniform", name='alpha_spectra'))
 
     ray.init(num_gpus=nGPU, num_cpus=cpu_count())
     optimizer = Optimizer(
