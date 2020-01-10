@@ -149,7 +149,7 @@ class NoRegularization(Trainer):
 
 class JacobianRegularization(Trainer):
 
-    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=-1,
+    def __init__(self, *, decoratee: BatchModifier, alpha_jacob, n=1,
                  optimizer, lr, weight_decay, max_iter=100_000, save_name=None):
         super(JacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
                                                lr=lr, weight_decay=weight_decay, max_iter=max_iter,
