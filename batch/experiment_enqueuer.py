@@ -15,10 +15,10 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 # Make top level directories
 if socket.gethostname() in ['dirac']:
     regularization = ["jac"]
-    trainer = ["vanilla", "adv"]
+    trainer = ["adv","vanilla"]
     stuff_to_loop_over = product(regularization, trainer)
 elif socket.gethostname() == 'erdos':
-    regularization = ["eig", "eigjac"]
+    regularization = ["eigjac","eig"]
     trainer = ["vanilla", "adv"]
     alpha_spectra = [1e-4, 1e-3, 1e-2, 1e-1]
     stuff_to_loop_over = product(regularization, trainer, alpha_spectra)
