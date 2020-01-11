@@ -78,7 +78,7 @@ class AdversarialTraining(BatchModifier):
 
     def FGSM(self, x_nat, y):
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
-        return torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1), ell
+        return torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1).detach(), ell
 
 
     @staticmethod
