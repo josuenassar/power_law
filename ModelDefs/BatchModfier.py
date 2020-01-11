@@ -69,8 +69,7 @@ class AdversarialTraining(BatchModifier):
         """
         for i in range(self.gradSteps):
             jacobian, ell = self.get_jacobian(x, y)  # get jacobian
-            x += self.lr * torch.sign(jacobian)  # take gradient step
-            xT = x.detach()
+            xT = (x + self.lr * torch.sign(jacobian)).detach()
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
             xT = torch.clamp(xT, lb, ub)
             x = xT
