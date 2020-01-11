@@ -83,35 +83,6 @@ class Trainer(nn.Module):
         _, predicted = torch.max(y_hat, 1)
         return (predicted != y.data).float().mean()
 
-# Utilities for serializing the model
-#     def serialize_model_type(self, filename=None):
-#         self._check_fname(filename)
-#         # TODO dump model definition into JSON so we can read it easily later on
-#         raise NotImplementedError
-
-    # @property
-    # def save_name(self):
-    #     self.save_name = self._save_name
-    #
-    # @save_name.setter
-    # def save_name(self, name):
-    #     self._save_name = name
-    #
-    # @save_name.getter
-    # def save_name(self):
-    #     return self.save_name
-    #
-    # def _check_fname(self, filename=None):
-    #     if filename is not None and self.save_name() is not None:
-    #         raise AssertionError('Save name has already been defined')
-    #     elif filename is not None and self.save_name is None:
-    #         self.save_name(filename)
-    #     elif filename is None and self.save_name is not None:
-    #         return self.save_name
-    #     else:
-    #         filename = str(uuid4())[:8]
-    #         self._check_fname(filename)
-
     def save(self, filename=None, other_vars=dict()):
         if self.save_name is None and filename is None:
             self.save_name = str(uuid4())[:8]
