@@ -15,16 +15,16 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 # Make top level directories
 if socket.gethostname() in ['dirac']:
     regularization = ["jac"]
-    trainer = ["adv","vanilla"]
+    trainer = ["adv", "vanilla"]
     stuff_to_loop_over = product(regularization, trainer)
 elif socket.gethostname() == 'erdos':
-    regularization = ["eigjac","eig"]
-    trainer = ["vanilla", "adv"]
+    regularization = ["eigjac", "eig"]
+    trainer = ["adv", "vanilla"]
     alpha_spectra = [1e-4, 1e-3, 1e-2, 1e-1]
     stuff_to_loop_over = product(regularization, trainer, alpha_spectra)
 elif socket.gethostname() == 'catniplab-Alienware':
     regularization = ["no"]
-    trainer = ["vanilla", "adv"]
+    trainer = ["adv", "vanilla"]
     stuff_to_loop_over = product(regularization, trainer)
 
 connection=Redis()
@@ -34,7 +34,6 @@ gpu1 = Queue('gpu1',connection=connection)
 
 queue = gpu
 # tmp_dir = '/tmp/rq_{}/'.format(uid)
-
 
 
 for stuff in stuff_to_loop_over:
@@ -65,7 +64,7 @@ for stuff in stuff_to_loop_over:
 
     kwargs = { "dir": os.path.join(tmp_dir,'power_law')}
 
-    ttl = None# infinite time in queue
+    ttl = None  # infinite time in queue
     queue.enqueue_call(func=subprocs_exec,
                         args=(cmds,kwargs),
                         timeout='14d', ttl=ttl,
