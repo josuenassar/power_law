@@ -68,7 +68,7 @@ class AdversarialTraining(BatchModifier):
         :return: x, the maximum found
         """
         for i in range(self.gradSteps):
-            jacobian, ell = self.get_jacobian(copy.deepcopy(x), y)  # get jacobian
+            jacobian, ell = self.get_jacobian(x, y)  # get jacobian
             x += self.lr * torch.sign(jacobian)  # take gradient step
             xT = x.detach()
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
