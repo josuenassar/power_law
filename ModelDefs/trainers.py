@@ -42,10 +42,11 @@ class Trainer(nn.Module):
         if self.no_minibatches > self.max_iter:
             return
         else:
+            x, y = self.prepare_batch(x, y)
+            self.optimizer.zero_grad()  # zero out gradient to ensure we don't backprop through adversarial image generation
             loss = self.evaluate_training_loss(x, y)
             if self.logger is not None:
                 self.logger.log_scalar("trainLoss", float(loss))
-            self.optimizer.zero_grad()
             loss.backward()
             self.optimizer.step()
             return loss
@@ -63,7 +64,7 @@ class Trainer(nn.Module):
         return loss/len(X), mce/len(X)
 
     def evaluate_training_loss(self, x, y):
-        x, y = self.prepare_batch(x, y)
+        # x, y = self.prepare_batch(x, y)
         h, y_hat = self.bothOutputs(x)
         # return self.loss(y_hat, y)
         return self.loss(y_hat, y)
@@ -130,7 +131,7 @@ class JacobianRegularization(Trainer):
 
     def evaluate_training_loss(self, x, y):
         x.requires_grad = True  # this is essential!
-        x, y = self.prepare_batch(x, y)
+        # x, y = self.prepare_batch(x, y)
         y_hat = self(x)
         loss = self.loss(y_hat, y)
         return loss + self.alpha_jacob * self.loss_regularizer(x, y_hat)
@@ -166,7 +167,7 @@ class EigenvalueRegularization(Trainer):
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
-        x, y = self.prepare_batch(x, y)
+        # x, y = self.prepare_batch(x, y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
@@ -228,7 +229,7 @@ class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
         x.requires_grad = True  # this is essential!
-        x, y = self.prepare_batch(x, y)
+        # x, y = self.prepare_batch(x, y)
         hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
         "Compute jacobian regularization"
