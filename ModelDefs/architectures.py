@@ -26,7 +26,7 @@ class ModelArchitecture(nn.Module):
         y_hat = self(x.to(self.device))
         ell = self.loss(y_hat, y.to(self.device))
         gradient = torch.autograd.grad(ell, x)[0]
-        return gradient, ell.item()
+        return gradient.data, ell.item()
 
 
 class MLP(ModelArchitecture):
