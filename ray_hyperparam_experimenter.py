@@ -74,6 +74,7 @@ def train(config, reporter):
     result = ex.current_run.result
     reporter(result=result, done=True)
 
+
 if __name__ == '__main__':
 
     budget = 50
