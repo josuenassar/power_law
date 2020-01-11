@@ -1,5 +1,6 @@
 from torch import nn
 import math
+import torch
 # Architectures
 
 
@@ -20,12 +21,12 @@ class ModelArchitecture(nn.Module):
     def bothOutputs(self, x):
         raise NotImplementedError
 
-    def get_jacobian(self, x, y_hat):
+    def get_jacobian(self, x, y):
         x.requires_grad_(True)
-        y = self(x.to(self.device))
-        ell = self.loss(y, y_hat.to(self.device))
-        ell.backward()
-        return x.grad.data, ell.item()
+        y_hat = self(x.to(self.device))
+        ell = self.loss(y_hat, y.to(self.device))
+        gradient = torch.autograd.grad(ell, x)[0]
+        return gradient, ell.item()
 
 
 class MLP(ModelArchitecture):
