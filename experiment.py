@@ -70,7 +70,7 @@ def cfg():
     regularizer = "eigjac"
     save_dir = os.getcwd()
     trainer = "vanilla"
-    training_type = "FGSM"
+    training_type = "PGD"
     hpsearch = True
     weight_decay = 0
 
