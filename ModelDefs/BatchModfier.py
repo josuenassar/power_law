@@ -59,7 +59,7 @@ class AdversarialTraining(BatchModifier):
         ell = losses[idx]
         return x, ell
 
-    def pgd(self, x_nat, x, y):
+    def pgd(self, x_nat, x, y, lb=0, ub=1):
         """
         Perform projected gradient descent from Madry et al 2018
         :param x_nat: starting image
@@ -72,14 +72,14 @@ class AdversarialTraining(BatchModifier):
             x += self.lr * torch.sign(jacobian)  # take gradient step
             xT = x.detach()
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
-            xT = torch.clamp(xT, 0, 1)
+            xT = torch.clamp(xT, lb, ub)
             x = xT
         ell = self.loss(self._architecture(x), y)
         return x, ell.item()
 
     def FGSM(self, x_nat, y):
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
-        return x_nat + self.eps * torch.sign(jacobian), ell
+        return torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1), ell
 
 
     @staticmethod
