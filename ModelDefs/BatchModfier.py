@@ -42,7 +42,7 @@ class AdversarialTraining(BatchModifier):
     
     def prepare_batch(self, x, y):
         x_adv, _ = self.generate_adv_images(x, y)
-        x_new = torch.cat((x, x_adv), 0)
+        x_new = torch.cat((x, x_adv), 0).detach()
         y_new = torch.cat((y, y), 0)
         return x_new, y_new
 
@@ -78,7 +78,9 @@ class AdversarialTraining(BatchModifier):
 
     def FGSM(self, x_nat, y):
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
-        return torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1).detach(), ell
+        x_nat = x_nat.detach()
+        x_adv = torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1).detach()
+        return x_adv, ell
 
 
     @staticmethod
