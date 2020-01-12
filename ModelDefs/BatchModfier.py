@@ -73,6 +73,7 @@ class AdversarialTraining(BatchModifier):
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
             xT = torch.clamp(xT, lb, ub)
             x = xT
+            del xT
         ell = self.loss(self._architecture(x), y)
         return x, ell.item()
 
