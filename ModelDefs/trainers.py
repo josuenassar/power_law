@@ -19,7 +19,7 @@ class Trainer(nn.Module):
         self.no_minibatches = 0
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self.parameters(),
-                                  lr=lr, weight_decay=weight_decay,amsgrad=True)
+                                  lr=lr, weight_decay=weight_decay, amsgrad=True)
         elif optimizer.lower() == 'sgd':
             self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'rms':
@@ -199,8 +199,8 @@ class EigenvalueRegularization(Trainer):
 
         for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=1, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
-            # x.to('cpu', async=True)
-            # y.to('cpu')
+            x.to('cpu', non_blocking=True)
+            y.to('cpu', non_blocking=True)
 
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
