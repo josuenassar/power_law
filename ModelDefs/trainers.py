@@ -19,7 +19,7 @@ class Trainer(nn.Module):
         self.no_minibatches = 0
         if optimizer.lower() == 'adam':
             self.optimizer = Adam(params=self.parameters(),
-                                  lr=lr, weight_decay=weight_decay,amsgrad=True)
+                                  lr=lr, weight_decay=weight_decay, amsgrad=True)
         elif optimizer.lower() == 'sgd':
             self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         elif optimizer.lower() == 'rms':
