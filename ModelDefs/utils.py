@@ -177,7 +177,7 @@ def compute_eig_vectors_only(hidden):
         # _, _, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
         _, vecTemp = torch.symeig(cov, eigenvectors=True)
         vecTemp = vecTemp.float()
-        eigVec.append(vecTemp)
+        eigVec.append(vecTemp.cpu())
 
     return eigVec
 
