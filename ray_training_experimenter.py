@@ -65,12 +65,14 @@ def train():
     from experiment import ex  # importing experiment here is crucial!
     time.sleep(random.uniform(0.0, 10.0))
     if smoke_test:
-        args = {'numEpochs': 1, **args}
-    mongoDBobserver = MongoObserver.create(
+        config = {'numEpochs': 1}
+    else:
+        config = {}
+    mongoDBobserver = MongoObserver(
         url='mongodb://powerLawNN:Pareto_a^-b@ackermann.memming.com/admin?authMechanism=SCRAM-SHA-1',
         db_name='powerLawExpts')
     ex.observers.append(mongoDBobserver)
-    ex.run(named_configs=[architecture], config_updates={**args})
+    ex.run(named_configs=[architecture], config_updates={**args, **config})
     result = ex.current_run.result
 
 
