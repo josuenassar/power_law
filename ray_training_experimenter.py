@@ -10,7 +10,7 @@ from sacred.observers import MongoObserver
 
 nCPU = cpu_count()
 nGPU = device_count()
-load = 1/2  # how large a fraction of the GPU memory does the model take up 0 <= load <=  1
+# load = 1/2  # how large a fraction of the GPU memory does the model take up 0 <= load <=  1
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--activation",  choices=['relu', 'tanh'],
@@ -59,22 +59,21 @@ if args["architecture"] in ["LeNet5", "MadryMNIST"]:
 args.pop('smoke_test')
 
 
-@ray.remote(num_gpus=load, num_cpus=int(load * nCPU/nGPU))
-def train(config):
+@ray.remote(num_gpus=1, num_cpus=int(nCPU/nGPU))
+def train():
     import time, random
     from experiment import ex  # importing experiment here is crucial!
     time.sleep(random.uniform(0.0, 10.0))
     if smoke_test:
-        config = {'numEpochs': 1, **config}
+        args = {'numEpochs': 1, **args}
     mongoDBobserver = MongoObserver.create(
         url='mongodb://powerLawNN:Pareto_a^-b@ackermann.memming.com/admin?authMechanism=SCRAM-SHA-1',
         db_name='powerLawExpts')
     ex.observers.append(mongoDBobserver)
-    ex.run(named_configs=[architecture], config_updates={**args, **config})
+    ex.run(named_configs=[architecture], config_updates={**args})
     result = ex.current_run.result
 
 
-jobid = os.popen("sacct -n -X --format jobid --name twists77.job").read().strip().strip('\n')
 if __name__ == '__main__':
-    ray.init(num_cpus=nCPU//2, num_gpus=1)
+    ray.init(num_cpus=nCPU//nGPU, num_gpus=nGPU)
     [train.remote() for i in range(args['reps'])]
