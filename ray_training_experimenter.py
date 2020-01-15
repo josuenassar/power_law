@@ -37,6 +37,8 @@ argparser.add_argument("--trainer", choices= ["vanilla", "adv"], default="vanill
 argparser.add_argument("--training_type", choices=["FGSM", "PGD"], default=argparse.SUPPRESS)
 argparser.add_argument("--hpsearch", type=bool, default=False)
 argparser.add_argument("--weight_decay", type=float, default=0.)
+argparser.add_argument('--reps', help='Server where the code ran', type=int,
+                       default=3)
 
 argparser.add_argument('--smoke-test', action="store_true", default=False)
 args, unknownargs = argparser.parse_known_args()
