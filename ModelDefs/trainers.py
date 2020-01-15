@@ -34,8 +34,8 @@ class Trainer(nn.Module):
     def train_epoch(self, X: DataLoader):
         for _, (x, y) in enumerate(tqdm(X, desc="Training Batches", ascii=True, position=1, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
-            x.to('cpu')
-            y.to('cpu')
+            x.to('cpu', non_blocking=True)
+            y.to('cpu', non_blocking=True)
 
     @counter
     def train_batch(self, x, y):
@@ -45,6 +45,7 @@ class Trainer(nn.Module):
             x, y = self.prepare_batch(x, y)
             self.optimizer.zero_grad()  # zero out gradient to ensure we don't backprop through adv image generation
             loss = self.evaluate_training_loss(x, y)
+            # print(torch.cuda.max_memory_cached())
             if self.logger is not None:
                 self.logger.log_scalar("trainLoss", float(loss))
             loss.backward()
@@ -178,13 +179,17 @@ class EigenvalueRegularization(Trainer):
     def spectra_regularizer(self, hidden):
         "Compute spectra regularizer"
         spectra_regul = torch.zeros(1, device=self.device)
-        spectra_temp = []
+        # spectra_temp = []
         for idx in range(len(hidden)):
-            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec[idx],
+            spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec[idx].to(self.device),
                                                 start=self.eig_start, device=self.device)
-            with torch.no_grad():
-                spectra_temp.append(spectra)
+            self.eig_vec[idx].to('cpu')
+            # with torch.no_grad():
+            #     spectra_temp.append(spectra)
             spectra_regul += rTemp
+            if self.eig_vec[0].requires_grad:
+                import warnings
+                warnings.warn("This is not OK!!!")
         return spectra_regul
 
     def train_epoch(self, X: DataLoader, X_full=None):
@@ -193,10 +198,9 @@ class EigenvalueRegularization(Trainer):
             self.add_eig_loader(X)
         elif X_full is None and self.eig_loader is not None:
             X_full, _ = next(iter(self.eig_loader))
-
         self.compute_eig_vectors(X_full.to(self.device))
         X_full.to('cpu', non_blocking=True)
-
+        torch.cuda.empty_cache()
         for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=1, leave=True)):
             self.train_batch(x.to(self.device), y.to(self.device))
             x.to('cpu', non_blocking=True)

@@ -18,10 +18,9 @@ if socket.gethostname() in ['dirac']:
     trainer = ["adv", "vanilla"]
     stuff_to_loop_over = product(regularization, trainer)
 elif socket.gethostname() == 'erdos':
-    # regularization = ["eigjac", "eig"]
-    regularization = ["eig"]
-    # trainer = ["adv", "vanilla"]
-    trainer = ["adv"]
+    regularization = ["eigjac", "eig"]
+    trainer = ["adv", "vanilla"]
+
     alpha_spectra = [1e-4, 1e-3, 1e-2, 1e-1]
     stuff_to_loop_over = product(regularization, trainer, alpha_spectra)
 elif socket.gethostname() == 'catniplab-Alienware':
