@@ -119,9 +119,9 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
         model.train_epoch(train_loader)
         torch.cuda.empty_cache()
         model.save()  # TODO: Error in save function
-        save_name_for_db = "model_data_{}.pt".format(epoch)
-        _run.add_artifact(model.save_name, save_name_for_db, content_type="application/octet-stream")
-        if hpsearch:
-            os.remove(model.save_name)
+    save_name_for_db = "model_data.pt"
+    _run.add_artifact(model.save_name, save_name_for_db, content_type="application/octet-stream")
+    if hpsearch:
+        os.remove(model.save_name)
 
     return float(1-mean_mce)  # holdout accuracy
