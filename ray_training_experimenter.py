@@ -60,7 +60,7 @@ args.pop('smoke_test')
 reps = args['reps']
 args.pop('reps')
 
-@ray.remote(num_gpus=1, num_cpus=int(nCPU/nGPU))
+@ray.remote(num_gpus=1)
 def train():
     import time, random
     from experiment import ex  # importing experiment here is crucial!
@@ -79,4 +79,5 @@ def train():
 
 if __name__ == '__main__':
     ray.init(num_gpus=nGPU)
-    [train.remote() for i in range(reps)]
+    futures =[train.remote() for i in range(reps)]
+    print(ray.get(futures))
