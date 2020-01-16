@@ -25,7 +25,7 @@ argparser.add_argument("--dataset", choices=["MNIST", "CIFAR10"], default=argpar
 argparser.add_argument("--dims", type=str, default=argparse.SUPPRESS)
 argparser.add_argument('--eps', type=float, default=argparse.SUPPRESS)
 argparser.add_argument('--gradSteps', type=int, default=argparse.SUPPRESS)
-argparser.add_argument("--lr", default=argparse.SUPPRESS)
+argparser.add_argument("--lr", type=float, default=argparse.SUPPRESS)
 argparser.add_argument("--lr_pgd", default=argparse.SUPPRESS)
 argparser.add_argument("--max_epochs", type=int, default=500)
 argparser.add_argument("--max_iter", type=int, default=argparse.SUPPRESS)
@@ -57,7 +57,8 @@ if args["architecture"] in ["LeNet5", "MadryMNIST"]:
     except:
         pass
 args.pop('smoke_test')
-
+reps = args['reps']
+args.pop('reps')
 
 @ray.remote(num_gpus=1, num_cpus=int(nCPU/nGPU))
 def train():
@@ -65,7 +66,7 @@ def train():
     from experiment import ex  # importing experiment here is crucial!
     time.sleep(random.uniform(0.0, 10.0))
     if smoke_test:
-        config = {'numEpochs': 1}
+        config = {'max_epochs': 1}
     else:
         config = {}
     mongoDBobserver = MongoObserver(
@@ -77,5 +78,6 @@ def train():
 
 
 if __name__ == '__main__':
-    ray.init(num_cpus=nCPU//nGPU, num_gpus=nGPU)
-    [train.remote() for i in range(args['reps'])]
+    import pdb; pdb.set_trace()
+    ray.init(num_gpus=nGPU)
+    [train.remote() for i in range(reps)]
