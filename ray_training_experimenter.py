@@ -78,6 +78,5 @@ def train():
 
 
 if __name__ == '__main__':
-    import pdb; pdb.set_trace()
     ray.init(num_gpus=nGPU)
     [train.remote() for i in range(reps)]
