@@ -80,7 +80,7 @@ pipeline = [
     {
         u"$match": {
             u"count": {
-                u"$gte": 50.0
+                u"$gte": 49.0
             }
         }
     }

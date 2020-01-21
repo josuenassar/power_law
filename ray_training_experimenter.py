@@ -63,7 +63,11 @@ args.pop('reps')
 @ray.remote(num_gpus=1)
 def train():
     import time, random
+    import importlib
+    import experiment
+    importlib.reload(experiment)
     from experiment import ex  # importing experiment here is crucial!
+
     time.sleep(random.uniform(0.0, 10.0))
     if smoke_test:
         config = {'max_epochs': 1}
