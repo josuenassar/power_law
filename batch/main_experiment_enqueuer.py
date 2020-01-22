@@ -114,7 +114,7 @@ try:
                     query = {}
                     query["result"] = doc['maxAcc']
                     print(doc['maxAcc'])
-                    query["config.alpha_spectra"] = doc["_id"]["alpha_spectra"]
+                    # query["config.alpha_spectra"] = doc["_id"]["alpha_spectra"]
                     query["config.trainer"] = doc["_id"]["trainer"]
                     query["config.regularizer"] = doc["_id"]["regularizer"]
                     cfg = collection.find(query).limit(1)[0]['config']
@@ -149,6 +149,7 @@ for task in todos:
                 '--regularizer', str(task['regularizer']),
                 '--trainer', str(task['trainer']),
                 '--lr', str(task['lr']),
+                '--alpha_jacob', str(task['alpha_jacob']),
                 ';', 'rm', '-rf', tmp_dir]
         # cmds = ['python','-c','import time;','time.sleep(30)']
     elif socket.gethostname() == 'erdos':
@@ -160,8 +161,9 @@ for task in todos:
                 '--data_dir', str(data_dir),
                 '--regularizer', str(task['regularizer']),
                 '--trainer', str(task['trainer']),
-                '--alpha_spectra', str(task['alpha_spectra']),
                 '--lr', str(task['lr']),
+                '--alpha_spectra', str(task['alpha_spectra']),
+                '--alpha_jacob', str(task['alpha_jacob']),
                 ';', 'rm', '-rf', tmp_dir]
 
     kwargs = {"dir": os.path.join(tmp_dir, 'power_law')}
