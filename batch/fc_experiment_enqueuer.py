@@ -44,9 +44,6 @@ else:
     trainer = ["adv", "vanilla"]
     stuff_to_loop_over = list(product(regularization, trainer))
 
-client = MongoClient('mongodb://powerLawNN:Pareto_a^-b@ackermann.memming.com/admin?authMechanism=SCRAM-SHA-1')
-database = client["powerLawHypers"]
-collection = database["runs"]
 # Created with Studio 3T, the IDE for MongoDB - https://studio3t.com/
 todos = []  # list of config files :D
 reps = 3  # number of realizations of each architecture to train
