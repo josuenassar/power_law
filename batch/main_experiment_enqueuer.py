@@ -141,7 +141,7 @@ for task in todos:
                                                                                   'empirical_experiments/ '
                                                                                   'analyze_networks/ USPS/"'})
 
-subprocess.call(" ".join(arg), shell=True)
+    subprocess.call(" ".join(arg), shell=True)
 
     if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
         cmds = ['python',
