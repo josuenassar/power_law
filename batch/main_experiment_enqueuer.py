@@ -137,8 +137,11 @@ queue = gpu
 for task in todos:
     uid = str(uuid.uuid4())[:8]
     tmp_dir = '/tmp/rq_{}/'.format(uid)
-    arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-r", "-l"], {"exclude": '"data/"'})
-    subprocess.call(" ".join(arg), shell=True)
+    arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-r", "-l"], {"exclude": '"MNIST/ data/ '
+                                                                                  'empirical_experiments/ '
+                                                                                  'analyze_networks/ USPS/"'})
+
+subprocess.call(" ".join(arg), shell=True)
 
     if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
         cmds = ['python',
