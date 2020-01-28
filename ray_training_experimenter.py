@@ -49,7 +49,7 @@ except:
     pass
 
 smoke_test = args['smoke_test']
-if args["architecture"] in ["LeNet5", "MadryMNIST"]:
+if args["architecture"] in ["LeNet5", "MadryMNIST", "FC"]:
     architecture = args["architecture"]
     [args.pop(k) for k in ['architecture']]
     try:
