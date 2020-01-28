@@ -78,7 +78,6 @@ for stuff in stuff_to_loop_over:
                 '--data_dir', str(data_dir),
                 '--regularizer', reg,
                 '--trainer', tr,
-                '--lr', str(lr),
                 '--alpha_jacob', str(alpha_jacob),
                 ';', 'rm', '-rf', tmp_dir]
         # cmds = ['python','-c','import time;','time.sleep(30)']
@@ -91,7 +90,6 @@ for stuff in stuff_to_loop_over:
                 '--data_dir', str(data_dir),
                 '--regularizer', reg,
                 '--trainer', tr,
-                '--lr', str(lr),
                 '--alpha_spectra', str(alpha),
                 ';', 'rm', '-rf', tmp_dir]
 
