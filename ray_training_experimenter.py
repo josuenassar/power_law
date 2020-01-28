@@ -17,7 +17,7 @@ argparser.add_argument("--activation",  choices=['relu', 'tanh'],
                        help='Nonlinearity.',default=argparse.SUPPRESS)
 argparser.add_argument("--alpha_jacob",  type=float, default=argparse.SUPPRESS)
 argparser.add_argument("--alpha_spectra",  type=float, default=argparse.SUPPRESS)
-argparser.add_argument("--architecture", choices=["LeNet5", "MadryMNIST", "mlp", "cnn"], required=True,
+argparser.add_argument("--architecture", choices=["LeNet5", "MadryMNIST", "FC", "mlp", "cnn"], required=True,
                        help='Type of neural network.')
 argparser.add_argument("--cuda", default=True)
 argparser.add_argument("--data_dir", required=True)
