@@ -180,7 +180,6 @@ class EigenvalueRegularization(Trainer):
     def spectra_regularizer(self, hidden):
         "Compute spectra regularizer"
         spectra_regul = torch.zeros(1, device=self.device)
-        # spectra_temp = []
 
         if self.only_last:
             spectra, rTemp = eigen_val_regulate(hidden[-1], self.eig_vec.to(self.device),
@@ -201,6 +200,8 @@ class EigenvalueRegularization(Trainer):
                     import warnings
                     warnings.warn("This is not OK!!!")
         return spectra_regul
+
+
 
     def train_epoch(self, X: DataLoader, X_full=None):
 
