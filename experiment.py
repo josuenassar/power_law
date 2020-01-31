@@ -83,12 +83,13 @@ def cfg():
     training_type = "PGD"
     hpsearch = True
     weight_decay = 0
+    only_last = False
 
 
 @ex.automain
 def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data_dir,
                 dataset, dims, eps, gradSteps, lr, lr_pgd, max_epochs, max_iter, noRestarts,
-                optimizer, regularizer, save_dir, trainer,
+                optimizer, regularizer, save_dir, trainer, only_last,
                 training_type, hpsearch, weight_decay, _seed, _run):
 
     os.makedirs(save_dir, exist_ok=True)
@@ -98,7 +99,8 @@ def do_training(activation, alpha_jacob, alpha_spectra, architecture, cuda, data
                     "trainer": trainer, "regularizer": regularizer, 'alpha_spectra': alpha_spectra,
                     'alpha_jacob': alpha_jacob, 'optimizer': optimizer, 'lr': lr, 'lr_pgd': lr_pgd,
                     'weight_decay': weight_decay, 'noRestarts':noRestarts,
-                    'cuda': cuda, 'eps': eps, 'gradSteps': gradSteps,  'training_type': training_type, "max_iter": max_iter}
+                    'cuda': cuda, 'eps': eps, 'gradSteps': gradSteps,  'training_type': training_type,
+                    "max_iter": max_iter, 'only_last': only_last}
 
     model = ModelFactory(**model_kwargs)
     # Store where model should be saved

@@ -88,6 +88,7 @@ for stuff in stuff_to_loop_over:
                 '--regularizer', reg,
                 '--trainer', tr,
                 '--alpha_spectra', str(alpha),
+                '--only_last', str(True),
                 ';', 'rm', '-rf', tmp_dir]
 
     kwargs = {"dir": os.path.join(tmp_dir, 'power_law')}
