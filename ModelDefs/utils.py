@@ -190,6 +190,29 @@ def compute_eig_vectors_only(hidden, only_last=False):
     return eigVec
 
 
+def compute_eig_values_only(hidden, only_last=False):
+
+    if only_last:
+        hTemp = hidden[-1] - torch.mean(hidden[-1], 0)
+        cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
+        cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
+        cov = (cov + cov.transpose(1, 0)) / 2
+        eigTemp, _ = torch.symeig(cov)
+        eigVals = eigTemp.float()
+    else:
+        eigVals = []
+        for idx in range(len(hidden)):
+            hTemp = hidden[idx] - torch.mean(hidden[idx], 0)
+            cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
+            cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
+            cov = (cov + cov.transpose(1, 0)) / 2
+            # _, _, vecTemp = torch.svd(cov, compute_uv=True)  # compute eigenvectors and values
+            eigTemp, _ = torch.symeig(cov)
+            eigTemp = eigTemp.float()
+            eigVals.append(eigTemp.cpu())
+    return eigVals
+
+
 def eigen_val_regulate(x, v, eigT=None, start=10, device='cpu'):
     """
     Function that approximates the eigenvalues of the matrix x, by finding them wrt some pseudo eigenvectors v and then
