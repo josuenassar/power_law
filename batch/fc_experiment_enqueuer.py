@@ -31,10 +31,10 @@ if socket.gethostname() in ['dirac']:
 elif socket.gethostname() == 'erdos':
     hostname = 'erdos'
     regularization = ["eig"]
-    trainer = ["adv", "vanilla"]
-    # alpha_spectra = [1, 2, 5]
+    trainer = ["vanilla", 'adv']
+    last_layer = [True, False]
     alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
-    stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra))
+    stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra, last_layer))
 elif socket.gethostname() == 'catniplab-Alienware':
     hostname = 'catniplab-Alienware'
     regularization = ["no"]
@@ -48,7 +48,7 @@ else:
 
 # Created with Studio 3T, the IDE for MongoDB - https://studio3t.com/
 todos = []  # list of config files :D
-reps = 3  # number of realizations of each architecture to train
+reps = 1  # number of realizations of each architecture to train
 
 # In[]
 connection = Redis()
@@ -81,7 +81,7 @@ for stuff in stuff_to_loop_over:
                 ';', 'rm', '-rf', tmp_dir]
         # cmds = ['python','-c','import time;','time.sleep(30)']
     elif socket.gethostname() == 'erdos':
-        reg, tr, alpha = stuff
+        reg, tr, alpha, layer = stuff
         cmds = ['python',
                 tmp_dir + 'power_law/ray_training_experimenter.py',
                 '--architecture', 'FC',
@@ -90,7 +90,7 @@ for stuff in stuff_to_loop_over:
                 '--regularizer', reg,
                 '--trainer', tr,
                 '--alpha_spectra', str(alpha),
-                '--only_last', str(True),
+                '--only_last', str(layer),
                 ';', 'rm', '-rf', tmp_dir]
 
     kwargs = {"dir": os.path.join(tmp_dir, 'power_law')}
