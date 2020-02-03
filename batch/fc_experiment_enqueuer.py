@@ -23,7 +23,8 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 # Make top level directories
 if socket.gethostname() in ['dirac']:
     hostname = 'dirac'
-    regularization = ["jac"]
+    # regularization = ["jac"]
+    regularization = ["no"]
     trainer = ["adv", "vanilla"]
     alpha_jacob = 0.01
     stuff_to_loop_over = list(product(regularization, trainer))
