@@ -32,7 +32,8 @@ elif socket.gethostname() == 'erdos':
     hostname = 'erdos'
     regularization = ["eig"]
     trainer = ["adv", "vanilla"]
-    alpha_spectra = [1e-3, 1e-2, 1e-1]
+    # alpha_spectra = [1, 2, 5]
+    alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
     stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra))
 elif socket.gethostname() == 'catniplab-Alienware':
     hostname = 'catniplab-Alienware'
