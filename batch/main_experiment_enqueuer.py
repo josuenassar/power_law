@@ -136,7 +136,7 @@ queue = gpu
 # for stuff in stuff_to_loop_over:
 for task in todos:
     uid = str(uuid.uuid4())[:8]
-    tmp_dir = '/tmp/rq_{}/'.format(uid)
+    tmp_dir = '/scratch/rq_{}/'.format(uid)
     arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-r", "-l"], {"exclude": '"MNIST/ data/ '
                                                                                   'empirical_experiments/ '
                                                                                   'analyze_networks/ USPS/"'})
