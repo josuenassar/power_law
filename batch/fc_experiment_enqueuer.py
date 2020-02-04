@@ -78,6 +78,7 @@ for stuff in stuff_to_loop_over:
                 '--regularizer', reg,
                 '--trainer', tr,
                 '--alpha_jacob', str(alpha_jacob),
+                '--reps', str(reps),
                 ';', 'rm', '-rf', tmp_dir]
         # cmds = ['python','-c','import time;','time.sleep(30)']
     elif socket.gethostname() == 'erdos':
@@ -91,6 +92,7 @@ for stuff in stuff_to_loop_over:
                 '--trainer', tr,
                 '--alpha_spectra', str(alpha),
                 '--only_last', str(layer),
+                '--reps', str(reps),
                 ';', 'rm', '-rf', tmp_dir]
 
     kwargs = {"dir": os.path.join(tmp_dir, 'power_law')}
