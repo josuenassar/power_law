@@ -64,7 +64,7 @@ for stuff in stuff_to_loop_over:
     uid = str(uuid.uuid4())[:8]
     tmp_dir = '/scratch/rq_{}/'.format(uid)
     arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-r", "-l"], {"exclude": '{../MNIST,../data,'
-                                                                                  '../empirical_experiments,'
+                                                                                  '../emperical_experiments,'
                                                                                   '../analyze_networks,USPS}'})
     subprocess.call(" ".join(arg), shell=True)
     import pdb; pdb.set_trace()
