@@ -67,7 +67,7 @@ for stuff in stuff_to_loop_over:
                                                                                   'empirical_experiments/ '
                                                                                   'analyze_networks/ USPS/"'})
     subprocess.call(" ".join(arg), shell=True)
-
+    import pdb; pdb.set_trace()
     if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
         reg, tr = stuff
         cmds = ['python',
