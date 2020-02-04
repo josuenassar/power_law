@@ -74,7 +74,7 @@ for stuff in stuff_to_loop_over:
     if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
         reg, tr = stuff
         cmds = ['python',
-                tmp_dir + 'power_law/ray_training_experimenter.py',
+                tmp_dir + '/home/josuenassar/Python/power_law/ray_training_experimenter.py',
                 '--architecture', 'FC',
                 '--save_dir', str(BASEPATH),
                 '--data_dir', str(data_dir),
@@ -87,7 +87,7 @@ for stuff in stuff_to_loop_over:
     elif socket.gethostname() == 'erdos':
         reg, tr, alpha, layer = stuff
         cmds = ['python',
-                tmp_dir + 'power_law/ray_training_experimenter.py',
+                tmp_dir + '/home/josuenassar/Python/power_law/ray_training_experimenter.py',
                 '--architecture', 'FC',
                 '--save_dir', str(BASEPATH),
                 '--data_dir', str(data_dir),
