@@ -23,7 +23,7 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 # Make top level directories
 if socket.gethostname() in ['dirac']:
     hostname = 'dirac'
-    regularization = ["jac"]
+    regularization = ["jac", "no"]
     # regularization = ["no"]
     trainer = ["adv", "vanilla"]
     alpha_jacob = 0.01
@@ -33,8 +33,8 @@ elif socket.gethostname() == 'erdos':
     regularization = ["eig"]
     trainer = ["vanilla", 'adv']
     last_layer = [True, False]
-    alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
-    alpha_spectra = alpha_spectra[::-1]
+    # alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
+    alpha_spectra = [1, 2, 5]
     stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra, last_layer))
 elif socket.gethostname() == 'catniplab-Alienware':
     hostname = 'catniplab-Alienware'
@@ -49,7 +49,7 @@ else:
 
 # Created with Studio 3T, the IDE for MongoDB - https://studio3t.com/
 todos = []  # list of config files :D
-reps = 1  # number of realizations of each architecture to train
+reps = 3  # number of realizations of each architecture to train
 
 # In[]
 connection = Redis()
