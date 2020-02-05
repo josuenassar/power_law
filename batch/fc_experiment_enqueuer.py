@@ -34,6 +34,7 @@ elif socket.gethostname() == 'erdos':
     trainer = ["vanilla", 'adv']
     last_layer = [True, False]
     alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
+    alpha_spectra = alpha_spectra[::-1]
     stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra, last_layer))
 elif socket.gethostname() == 'catniplab-Alienware':
     hostname = 'catniplab-Alienware'
