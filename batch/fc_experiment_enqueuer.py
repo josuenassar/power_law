@@ -63,10 +63,10 @@ lr = 1e-4
 for stuff in stuff_to_loop_over:
     uid = str(uuid.uuid4())[:8]
     tmp_dir = '/scratch/rq_{}/'.format(uid)
-    #arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-avR","--relative", "-l"], {"exclude=": '{MNIST,data,'
+    #arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-avR", "-l"], {"exclude=": '{MNIST,data,'
     #                                                                              'emperical_experiments,'
     #                                                                              'analyze_networks,USPS}'})
-    arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-avR", "--relative", "-l", '--exclude={MNIST,data,'
+    arg = gen_arg_list(["rsync", BASEPATH, tmp_dir[:-1], "-av", "-l", '--exclude={MNIST,data,'
                                                                                                    'emperical_experiments,'
                                                                                                    'analyze_networks,USPS}'])
     #import pdb; pdb.set_trace()
@@ -74,7 +74,7 @@ for stuff in stuff_to_loop_over:
     if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
         reg, tr = stuff
         cmds = ['python',
-                tmp_dir + 'home/josuenassar/Python/power_law/ray_training_experimenter.py',
+                tmp_dir + 'power_law/ray_training_experimenter.py',
                 '--architecture', 'FC',
                 '--save_dir', str(BASEPATH),
                 '--data_dir', str(data_dir),
@@ -87,7 +87,7 @@ for stuff in stuff_to_loop_over:
     elif socket.gethostname() == 'erdos':
         reg, tr, alpha, layer = stuff
         cmds = ['python',
-                tmp_dir + 'home/josuenassar/Python/power_law/ray_training_experimenter.py',
+                tmp_dir + 'power_law/ray_training_experimenter.py',
                 '--architecture', 'FC',
                 '--save_dir', str(BASEPATH),
                 '--data_dir', str(data_dir),
