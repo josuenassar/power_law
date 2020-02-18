@@ -50,7 +50,7 @@ else:
 
 # Created with Studio 3T, the IDE for MongoDB - https://studio3t.com/
 todos = []  # list of config files :D
-reps = 3  # number of realizations of each architecture to train
+reps = 2  # number of realizations of each architecture to train
 
 # In[]
 connection = Redis()
