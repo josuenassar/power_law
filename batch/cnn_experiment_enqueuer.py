@@ -31,7 +31,8 @@ if socket.gethostname() in ['dirac']:
 elif socket.gethostname() == 'erdos':
     hostname = 'erdos'
     regularization = ["eig"]
-    trainer = ["vanilla", 'adv']
+    # trainer = ["vanilla", 'adv']
+    trainer = ["vanilla"]
     # last_layer = [True, False]
     last_layer = [False]
     # alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
