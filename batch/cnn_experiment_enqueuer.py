@@ -97,7 +97,7 @@ for stuff in stuff_to_loop_over:
                 '--regularizer', reg,
                 '--trainer', tr,
                 '--alpha_spectra', str(alpha),
-                '--only_last', layer,
+                '--only_last', str(layer),
                 '--reps', str(reps),
                 ';', 'rm', '-rf', tmp_dir]
 
