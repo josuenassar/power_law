@@ -34,7 +34,7 @@ elif socket.gethostname() == 'erdos':
     # trainer = ["vanilla", 'adv']
     trainer = ["vanilla"]
     # last_layer = [True, False]
-    last_layer = [False]
+    last_layer = [True]
     # alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
     alpha_spectra = [1, 2, 5]
     stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra, last_layer))
@@ -97,7 +97,7 @@ for stuff in stuff_to_loop_over:
                 '--regularizer', reg,
                 '--trainer', tr,
                 '--alpha_spectra', str(alpha),
-                # '--only_last', layer,
+                '--only_last', layer,
                 '--reps', str(reps),
                 ';', 'rm', '-rf', tmp_dir]
 
