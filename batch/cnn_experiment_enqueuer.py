@@ -73,7 +73,7 @@ for stuff in stuff_to_loop_over:
                                                                                                    'analyze_networks,USPS}'])
     #import pdb; pdb.set_trace()
     subprocess.call(" ".join(arg), shell=True)
-    if socket.gethostname() in ['dirac', 'catniplab-Alienware']:
+    if socket.gethostname() in ['dirac', 'catniplab-Alienware', 'erdos']:
         reg, tr = stuff
         cmds = ['python',
                 tmp_dir + 'power_law/ray_training_experimenter.py',
@@ -86,20 +86,20 @@ for stuff in stuff_to_loop_over:
                 '--reps', str(reps),
                 ';', 'rm', '-rf', tmp_dir]
         # cmds = ['python','-c','import time;','time.sleep(30)']
-    elif socket.gethostname() == 'erdos':
-        reg, tr, alpha, layer = stuff
-        print(layer)
-        cmds = ['python',
-                tmp_dir + 'power_law/ray_training_experimenter.py',
-                '--architecture', 'MadryMNIST',
-                '--save_dir', str(BASEPATH),
-                '--data_dir', str(data_dir),
-                '--regularizer', reg,
-                '--trainer', tr,
-                '--alpha_spectra', str(alpha),
-                '--only_last', str(layer),
-                '--reps', str(reps),
-                ';', 'rm', '-rf', tmp_dir]
+    # elif socket.gethostname() == 'erdos':
+    #     reg, tr, alpha, layer = stuff
+    #     print(layer)
+    #     cmds = ['python',
+    #             tmp_dir + 'power_law/ray_training_experimenter.py',
+    #             '--architecture', 'MadryMNIST',
+    #             '--save_dir', str(BASEPATH),
+    #             '--data_dir', str(data_dir),
+    #             '--regularizer', reg,
+    #             '--trainer', tr,
+    #             '--alpha_spectra', str(alpha),
+    #             '--only_last', str(layer),
+    #             '--reps', str(reps),
+    #             ';', 'rm', '-rf', tmp_dir]
 
     kwargs = {"dir": os.path.join(tmp_dir, 'power_law')}
 
