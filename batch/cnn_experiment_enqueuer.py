@@ -21,23 +21,25 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 # alpha_spectra = [1e-4, 1e-3, 1e-2, 1e-1]
 # stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra))
 # Make top level directories
-if socket.gethostname() in ['dirac']:
+if socket.gethostname() in ['dirac', 'erdos']:
     hostname = 'dirac'
+    hostname = socket.gethostname()
+    print(hostname)
     # regularization = ["jac", "no"]
     regularization = ["no"]
     trainer = ["vanilla"]
     alpha_jacob = 0.01
     stuff_to_loop_over = list(product(regularization, trainer))
-elif socket.gethostname() == 'erdos':
-    hostname = 'erdos'
-    regularization = ["eig"]
-    # trainer = ["vanilla", 'adv']
-    trainer = ["vanilla"]
-    # last_layer = [True, False]
-    last_layer = [True]
-    # alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
-    alpha_spectra = [1, 2, 5]
-    stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra, last_layer))
+# elif socket.gethostname() == 'erdos':
+#     hostname = 'erdos'
+#     regularization = ["eig"]
+#     # trainer = ["vanilla", 'adv']
+#     trainer = ["vanilla"]
+#     # last_layer = [True, False]
+#     last_layer = [True]
+#     # alpha_spectra = [1e-3, 1e-2, 1e-1, 1, 2, 5]
+#     alpha_spectra = [1, 2, 5]
+#     stuff_to_loop_over = list(product(regularization, trainer, alpha_spectra, last_layer))
 elif socket.gethostname() == 'catniplab-Alienware':
     hostname = 'catniplab-Alienware'
     regularization = ["no"]
