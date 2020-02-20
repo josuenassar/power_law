@@ -23,9 +23,9 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 # Make top level directories
 if socket.gethostname() in ['dirac']:
     hostname = 'dirac'
-    regularization = ["jac", "no"]
+    # regularization = ["jac", "no"]
     # regularization = ["no"]
-    trainer = ["adv", "vanilla"]
+    trainer = ["vanilla"]
     alpha_jacob = 0.01
     stuff_to_loop_over = list(product(regularization, trainer))
 elif socket.gethostname() == 'erdos':
