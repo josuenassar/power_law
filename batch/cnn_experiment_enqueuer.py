@@ -24,7 +24,7 @@ data_dir = os.path.join(BASEPATH, 'data')  # TODO fill this and set it as an abs
 if socket.gethostname() in ['dirac']:
     hostname = 'dirac'
     # regularization = ["jac", "no"]
-    # regularization = ["no"]
+    regularization = ["no"]
     trainer = ["vanilla"]
     alpha_jacob = 0.01
     stuff_to_loop_over = list(product(regularization, trainer))
