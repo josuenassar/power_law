@@ -26,7 +26,7 @@ if socket.gethostname() in ['dirac', 'erdos']:
     hostname = socket.gethostname()
     print(hostname)
     # regularization = ["jac", "no"]
-    regularization = ["no"]
+    regularization = ["jac"]
     trainer = ["vanilla"]
     alpha_jacob = 0.01
     stuff_to_loop_over = list(product(regularization, trainer))
