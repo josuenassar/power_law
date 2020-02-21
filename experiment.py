@@ -49,6 +49,17 @@ def FC():
 
 
 @ex.named_config
+def Shallow():
+    """
+    To avoid passing lengthy architecture definitions we can use this as a convenience function
+
+    The function only modifies the contents of the baseline configuration in experiment.cfg (below)
+    """
+    architecture = "mlp"
+    dims = [(28 * 28, 1_000), (1_000, 10)]
+
+
+@ex.named_config
 def SaveDiracErdos():
     save_dir = os.getcwd()
     data_dir = '../..'
