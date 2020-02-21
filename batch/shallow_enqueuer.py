@@ -27,7 +27,7 @@ def run(alpha_spectra=0):
     reps = 2
     lr = 1e-4
     hostname = socket.gethostname()
-
+    print(hostname)
     # In[]
     connection = Redis()
     gpu = Queue('gpu', connection=connection)
