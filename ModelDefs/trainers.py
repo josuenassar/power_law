@@ -7,6 +7,7 @@ from tqdm import tqdm
 from torch.utils.data.dataloader import DataLoader
 from ModelDefs.utils import JacobianReg, counter, eigen_val_regulate, compute_eig_vectors_only
 from ModelDefs.BatchModfier import BatchModifier
+import numpy as np
 
 
 class Trainer(nn.Module):
@@ -141,7 +142,7 @@ class JacobianRegularization(Trainer):
 class EigenvalueRegularization(Trainer):
 
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
-                 weight_decay=1e-5, alpha_spectra, only_last=False):
+                 weight_decay=1e-5, alpha_spectra, only_last=False, slope=1):
         super(EigenvalueRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
                                                lr=lr, weight_decay=weight_decay, max_iter=max_iter,
                                                save_name=save_name)
@@ -151,7 +152,11 @@ class EigenvalueRegularization(Trainer):
         self.valLoss = []  # validation loss
         self.val_regularizer = []  # validation regularizer
         self.eig_vec = []
-        self.alpha_spectra = alpha_spectra
+        self.alpha_spectra = alpha_spectra  # strength of regularizer
+        if ~isinstance(slope, list):
+            self.slopes = list(slope * np.ones(self.numHiddenLayers))
+        else:
+            self.slopes = slope
         self.eig_start = 10
         self.only_last = only_last
         self.eig_loader = None
@@ -183,7 +188,8 @@ class EigenvalueRegularization(Trainer):
 
         if self.only_last:
             spectra, rTemp = eigen_val_regulate(hidden[-1], self.eig_vec.to(self.device),
-                                                start=self.eig_start, device=self.device)
+                                                start=self.eig_start, device=self.device,
+                                                slope=self.slopes[-1])
             self.eig_vec.to('cpu')
             spectra_regul += rTemp
             if self.eig_vec.requires_grad:
@@ -193,15 +199,13 @@ class EigenvalueRegularization(Trainer):
         else:
             for idx in range(len(hidden)):
                 spectra, rTemp = eigen_val_regulate(hidden[idx], self.eig_vec[idx].to(self.device),
-                                                    start=self.eig_start, device=self.device)
+                                                    start=self.eig_start, device=self.device, slope=self.slopes[idx])
                 self.eig_vec[idx].to('cpu')
                 spectra_regul += rTemp
                 if self.eig_vec[0].requires_grad:
                     import warnings
                     warnings.warn("This is not OK!!!")
         return spectra_regul
-
-
 
     def train_epoch(self, X: DataLoader, X_full=None):
 
@@ -220,11 +224,11 @@ class EigenvalueRegularization(Trainer):
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
-                 weight_decay=1e-5, alpha_spectra, alpha_jacob, only_last=False, n=1):
+                 weight_decay=1e-5, alpha_spectra, alpha_jacob, only_last=False, n=1, slope=-1):
         super(EigenvalueAndJacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
                                                        lr=lr, weight_decay=weight_decay, max_iter=max_iter,
                                                        save_name=save_name, alpha_spectra=alpha_spectra,
-                                                                  only_last=only_last)
+                                                                  only_last=only_last, slope=slope)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
         self.train_regularizer = []  # store the value of the regularizer during training
