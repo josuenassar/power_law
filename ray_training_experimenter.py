@@ -44,6 +44,7 @@ argparser.add_argument('--reps', help='Server where the code ran', type=int,
 argparser.add_argument('--smoke-test', action="store_true", default=False)
 args, unknownargs = argparser.parse_known_args()
 args = vars(args)
+print(args['only_last'])
 try :
     args['dims'] = eval(args['dims'])
 except:
