@@ -239,11 +239,9 @@ def eigen_val_regulate(x, v, eigT=None, start=10, device='cpu', slope=1):
     # slope = -1
     with torch.no_grad():
         beta = eigs[start] * (start + 1) ** slope
-        # alpha = eigs[start] * (start + 1)  # let the the constant be the largest eigenvalue
 
     for n in range(start + 1, eigs.shape[0]):
         if eigs[n] > 0:  # don't use negative eigenvalues
             gamma = beta / ((n + 1) ** slope)
-            regul += (eigs[n] / gamma - 1) ** 2 + torch.relu(eigs[n] / gamma - 1)
-            # regul += (eigs[n] / (alpha / (n + 1)) - 1) ** 2 + torch.relu(eigs[n] / (alpha / (n + 1)) - 1)
+            regul += (eigs[n] / gamma - 1) ** 2  + torch.relu(eigs[n] / gamma - 1)
     return eigs, regul / x.shape[1]
