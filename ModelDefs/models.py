@@ -4,7 +4,7 @@ import unittest
 import os
 
 from torch.utils.data.dataloader import DataLoader
-from ModelDefs.architectures import MLP, CNN
+from ModelDefs.architectures import MLP, CNN, Flat
 from ModelDefs.BatchModfier import AdversarialTraining, MLTraining
 from ModelDefs.trainers import NoRegularization, JacobianRegularization,\
     EigenvalueAndJacobianRegularization, EigenvalueRegularization
@@ -26,6 +26,7 @@ def filter_n_eval(func, **kwargs):
 def ModelFactory(**kwargs):
     classes = {'mlp': MLP,
                'cnn': CNN,
+               'flat': Flat,
                'adv': AdversarialTraining,
                'vanilla': MLTraining,
                'no': NoRegularization,
