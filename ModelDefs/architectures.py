@@ -79,6 +79,10 @@ class MLP(ModelArchitecture):
 
 
 class Whiten(nn.Module):
+    def __init__(self, cuda=False):
+        super().__init__()
+        self.device = 'cuda' if cuda else 'cpu'
+
     def forward(self, input):
         "Compute covariance"
         temp = input - torch.mean(input, 0)
@@ -112,7 +116,7 @@ class Flat(ModelArchitecture):
                 modules.append(nn.Tanh())
 
             if idx == place:
-                modules.append(Whiten())
+                modules.append(Whiten(cuda=cuda))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
         self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
