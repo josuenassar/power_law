@@ -56,7 +56,7 @@ def Shallow():
     The function only modifies the contents of the baseline configuration in experiment.cfg (below)
     """
     architecture = "mlp"
-    dims = [(28 * 28, 1_000), (1_000, 10)]
+    dims = [(28 * 28, 2_000), (2_000, 10)]
 
 
 @ex.named_config
