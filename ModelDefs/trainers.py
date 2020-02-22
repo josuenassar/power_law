@@ -158,7 +158,7 @@ class EigenvalueRegularization(Trainer):
         else:
             self.slopes = slope
         self.eig_start = 10
-        self.only_last = only_last
+        self.only_last = bool(only_last)
         self.eig_loader = None
 
     def add_eig_loader(self, X):
