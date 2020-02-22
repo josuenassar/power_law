@@ -33,7 +33,7 @@ class MLP(ModelArchitecture):
     """
     Multilayer perceptron with a variable amount of hidden layers
     """
-    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
+    def __init__(self, *, dims, activation='relu', bn=True, cuda=False):
         """
         Constructor for MLP with a variable number of hidden layers
         :param dims: A list of N tuples where the first N -1 determine the N - 1 hidden layers and the last tuple
@@ -46,12 +46,12 @@ class MLP(ModelArchitecture):
         modules = []
         for idx in range(len(dims) - 1):
             modules.append(nn.Linear(dims[idx][0], dims[idx][1]))
+            if bn:
+                modules.append(nn.BatchNorm1d(dims[idx][1]))
             if activation == 'relu':
                 modules.append(nn.ReLU())
             else:
                 modules.append(nn.Tanh())
-            if bn:
-                modules.append(nn.BatchNorm1d(dims[idx][1]))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
         self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
@@ -78,6 +78,65 @@ class MLP(ModelArchitecture):
         return hidden, self.sequential[-1](hidden[-1])
 
 
+class Whiten(nn.Module):
+    def forward(self, input):
+        "Compute covariance"
+        temp = input - torch.mean(input, 0)
+        cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
+        cov = (cov + cov.transpose(1, 0)) / 2
+        R = torch.cholesky(cov)  # returns the upper cholesky matrix
+        return torch.solve(input.T, R).T
+
+
+class Flat(ModelArchitecture):
+    "A fully connected, 3 layer network where one of the hidden layers will have a white spectra"
+    def __init__(self, *, dims, activation='relu', bn=True, cuda=False):
+        super().__init__(cuda=cuda)
+        place = dims[0]
+        dims = dims[1:]
+        self.numHiddenLayers = len(dims[:-1])  # number of hidden layers in the network
+        assert self.numHiddenLayers == 3
+
+        self.bn = bn
+        modules = []
+        for idx in range(len(dims) - 1):
+            modules.append(nn.Linear(dims[idx][0], dims[idx][1]))
+            if bn:
+                modules.append(nn.BatchNorm1d(dims[idx][1]))
+
+            if activation == 'relu':
+                modules.append(nn.ReLU())
+            else:
+                modules.append(nn.Tanh())
+
+            if idx == place:
+                modules.append(Whiten())
+        modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
+        self.sequential = nn.Sequential(*modules)
+        self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
+
+    def forward(self, x):
+        x = x.view(x.size(0), -1)
+        # TODO vectorize inputs
+        return self.sequential(x)
+
+    def bothOutputs(self, x):
+        hidden = [None] * self.numHiddenLayers
+        x = x.view(x.size(0), -1)
+
+        if self.bn:
+            indices = [0, 3, 7, 10]
+        else:
+            indices = [0, 2, 5, 7]
+
+        for idx in range(self.numHiddenLayers):
+            if idx == 0:
+                hidden[idx] = self.sequential[idx:idx + 2](x)
+            else:
+                hidden[idx] = self.sequential[idx:idx + 2](hidden[idx - 1])
+        return hidden, self.sequential[-1](hidden[-1])
+
+
 class CNN(ModelArchitecture):
     """
     CNN architecture with a variable number of convolutional layers and a variable number of fully connected layers
@@ -100,6 +159,8 @@ class CNN(ModelArchitecture):
         convModules = []
         for idx in range(self.numConvLayers):
             convModules.append(nn.Conv2d(dims[idx][0], dims[idx][-1], kernel_size=(5, 5)))
+            # if bn:
+            #     convModules.append(nn.BatchNorm1d(dims[idx][1]))
             if activation == 'relu':
                 convModules.append(nn.ReLU())
             else:
@@ -115,12 +176,12 @@ class CNN(ModelArchitecture):
         linModules = []
         for idx in range(self.numConvLayers, len(dims) - 1):
             linModules.append(nn.Linear(dims[idx][0], dims[idx][1]))
+            if bn:
+                linModules.append(nn.BatchNorm1d(dims[idx][1]))
             if activation == 'relu':
                 linModules.append(nn.ReLU())
             else:
                 linModules.append(nn.Tanh())
-            if bn:
-                linModules.append(nn.BatchNorm1d(dims[idx][1]))
             self.max_neurons = max([self.max_neurons, dims[idx][1]])
         linModules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.linSequential = nn.Sequential(*linModules)
