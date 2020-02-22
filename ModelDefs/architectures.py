@@ -83,9 +83,10 @@ class Whiten(nn.Module):
         "Compute covariance"
         temp = input - torch.mean(input, 0)
         cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
-        cov = (cov + cov.transpose(1, 0)) / 2
+        cov = (cov + cov.transpose(1, 0)) / 2 + 1e-5 * torch.eye(cov.shape[0])
         R = torch.cholesky(cov)  # returns the upper cholesky matrix
-        return torch.solve(input.T, R).T
+        Y, _ = torch.solve(input.transpose(1, 0), R)
+        return Y.transpose(1, 0)
 
 
 class Flat(ModelArchitecture):
@@ -131,9 +132,9 @@ class Flat(ModelArchitecture):
 
         for idx in range(self.numHiddenLayers):
             if idx == 0:
-                hidden[idx] = self.sequential[idx:idx + 2](x)
+                hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](x)
             else:
-                hidden[idx] = self.sequential[idx:idx + 2](hidden[idx - 1])
+                hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](hidden[idx - 1])
         return hidden, self.sequential[-1](hidden[-1])
 
 
