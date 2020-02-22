@@ -85,7 +85,8 @@ class Whiten(nn.Module):
         cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
         cov = (cov + cov.transpose(1, 0)) / 2 + 1e-5 * torch.eye(cov.shape[0])
         R = torch.cholesky(cov)  # returns the upper cholesky matrix
-        Y, _ = torch.solve(input.transpose(1, 0), R)
+        # Y, _ = torch.solve(input.transpose(1, 0), R)
+        Y, _ = torch.triangular_solve(input.transpose(1, 0), R, upper=False)
         return Y.transpose(1, 0)
 
 
