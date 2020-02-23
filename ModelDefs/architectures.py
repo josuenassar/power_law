@@ -3,6 +3,7 @@ import math
 import torch
 # Architectures
 
+# TODO: Fix batch norm issue
 
 class ModelArchitecture(nn.Module):
     """
@@ -33,7 +34,7 @@ class MLP(ModelArchitecture):
     """
     Multilayer perceptron with a variable amount of hidden layers
     """
-    def __init__(self, *, dims, activation='relu', bn=True, cuda=False):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
         """
         Constructor for MLP with a variable number of hidden layers
         :param dims: A list of N tuples where the first N -1 determine the N - 1 hidden layers and the last tuple
@@ -83,12 +84,13 @@ class Whiten(nn.Module):
         super().__init__()
         self.device = 'cuda' if cuda else 'cpu'
 
-    def forward(self, input):
+    def forward(self, input, R=None):
         "Compute covariance"
         temp = input - torch.mean(input, 0)
         cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
         cov = (cov + cov.transpose(1, 0)) / 2 + 1e-5 * torch.eye(cov.shape[0], device=self.device)
-        R = torch.cholesky(cov)  # returns the upper cholesky matrix
+        if R is None:
+            R = torch.cholesky(cov)  # returns the upper cholesky matrix
         # Y, _ = torch.solve(input.transpose(1, 0), R)
         Y, _ = torch.triangular_solve(input.transpose(1, 0), R, upper=False)
         return Y.transpose(1, 0)
@@ -96,7 +98,7 @@ class Whiten(nn.Module):
 
 class Flat(ModelArchitecture):
     "A fully connected, 3 layer network where one of the hidden layers will have a white spectra"
-    def __init__(self, *, dims, activation='relu', bn=True, cuda=False):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
         super().__init__(cuda=cuda)
         place = dims[0]
         dims = dims[1:]
@@ -104,6 +106,7 @@ class Flat(ModelArchitecture):
         assert self.numHiddenLayers == 3
 
         self.bn = bn
+        self.R = None
         modules = []
         for idx in range(len(dims) - 1):
             modules.append(nn.Linear(dims[idx][0], dims[idx][1]))
