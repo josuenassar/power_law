@@ -98,15 +98,14 @@ class Whiten(nn.Module):
 
 class Flat(ModelArchitecture):
     "A fully connected, 3 layer network where one of the hidden layers will have a white spectra"
-    def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, R=None):
         super().__init__(cuda=cuda)
         place = dims[0]
         dims = dims[1:]
         self.numHiddenLayers = len(dims[:-1])  # number of hidden layers in the network
         assert self.numHiddenLayers == 3
-
+        self.R = R
         self.bn = bn
-        self.R = None
         modules = []
         for idx in range(len(dims) - 1):
             modules.append(nn.Linear(dims[idx][0], dims[idx][1]))
@@ -140,7 +139,7 @@ class Flat(ModelArchitecture):
             if idx == 0:
                 hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](x)
             else:
-                hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](hidden[idx - 1])
+                hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](hidden[idx - 1], self.R)
         return hidden, self.sequential[-1](hidden[-1])
 
 
