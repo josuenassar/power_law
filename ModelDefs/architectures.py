@@ -110,14 +110,12 @@ class Flat(ModelArchitecture):
         modules = []
         for idx in range(len(dims) - 1):
             modules.append(nn.Linear(dims[idx][0], dims[idx][1]))
-            if bn:
-                modules.append(nn.BatchNorm1d(dims[idx][1]))
-
             if activation == 'relu':
                 modules.append(nn.ReLU())
             else:
                 modules.append(nn.Tanh())
-
+            if bn:
+                modules.append(nn.BatchNorm1d(dims[idx][1]))
             if idx == place:
                 modules.append(Whiten(cuda=cuda))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
