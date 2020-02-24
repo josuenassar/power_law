@@ -80,19 +80,20 @@ class MLP(ModelArchitecture):
 
 
 class Whiten(nn.Module):
-    def __init__(self, cuda=False):
+    def __init__(self, cuda=False, R=None):
         super().__init__()
         self.device = 'cuda' if cuda else 'cpu'
+        self.R = R
 
-    def forward(self, input, R=None):
+    def forward(self, input):
         "Compute covariance"
-        if R is None:
+        if self.R is None:
             temp = input - torch.mean(input, 0)
             cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
             cov = (cov + cov.transpose(1, 0)) / 2 + 1e-5 * torch.eye(cov.shape[0], device=self.device)
             R = torch.cholesky(cov)  # returns the upper cholesky matrix
         # Y, _ = torch.solve(input.transpose(1, 0), R)
-        Y, _ = torch.triangular_solve(input.transpose(1, 0), R, upper=False)
+        Y, _ = torch.triangular_solve(input.transpose(1, 0), self.R, upper=False)
         return Y.transpose(1, 0)
 
 
@@ -104,7 +105,6 @@ class Flat(ModelArchitecture):
         dims = dims[1:]
         self.numHiddenLayers = len(dims[:-1])  # number of hidden layers in the network
         assert self.numHiddenLayers == 3
-        self.R = R
         self.bn = bn
         modules = []
         for idx in range(len(dims) - 1):
@@ -116,7 +116,7 @@ class Flat(ModelArchitecture):
             if bn:
                 modules.append(nn.BatchNorm1d(dims[idx][1]))
             if idx == place:
-                modules.append(Whiten(cuda=cuda))
+                modules.append(Whiten(cuda=cuda, R=R))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
         self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
@@ -139,7 +139,7 @@ class Flat(ModelArchitecture):
             if idx == 0:
                 hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](x)
             else:
-                hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](hidden[idx - 1], self.R)
+                hidden[idx] = self.sequential[indices[idx]:indices[idx + 1]](hidden[idx - 1])
         return hidden, self.sequential[-1](hidden[-1])
 
 
