@@ -91,7 +91,7 @@ class Whiten(nn.Module):
             temp = input - torch.mean(input, 0)
             cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
             cov = (cov + cov.transpose(1, 0)) / 2 + 1e-5 * torch.eye(cov.shape[0], device=self.device)
-            R = torch.cholesky(cov)  # returns the upper cholesky matrix
+            R = torch.cholesky(cov)  # returns the lower cholesky matrix
         else:
             R = self.R
             temp = input - torch.mean(input, 0)
