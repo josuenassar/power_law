@@ -94,7 +94,8 @@ class Whiten(nn.Module):
             R = torch.cholesky(cov)  # returns the upper cholesky matrix
         else:
             R = self.R
-        Y, _ = torch.triangular_solve(input.transpose(1, 0), R, upper=False)
+            temp = input - torch.mean(input, 0)
+        Y, _ = torch.triangular_solve(temp.transpose(1, 0), R, upper=False)
         return Y.transpose(1, 0)
 
 
