@@ -8,9 +8,20 @@ from DataDefs.data import get_data
 import torch
 import numpy as np
 import copy
+import os
+from joblib import Parallel, delayed
+os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
+def train(model, batch_size, num_epochs, X_full):
+    train_loader, _, _ = get_data(dataset='MNIST', batch_size=batch_size, _seed=np.random.randint(100),
+                                                      validate=False, data_dir='')
+    for epoch in tqdm(range(num_epochs)):
+        model.train_epoch(train_loader, X_full)
+    return model
+
+
+def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=True):
     """
     Runs a single layer MLP  with 2,000 hidden units on MNIST. The user can specify at what point in the eigenvalue
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
@@ -25,7 +36,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
     stuff_to_loop_over = product(slopes, regularizers_strengths)
     # In[]
     "Load in data loader"
-    train_loader, test_loader, full_loader = get_data(dataset='MNIST', batch_size=batch_size, _seed=0,
+    train_loader, _, full_loader = get_data(dataset='MNIST', batch_size=batch_size, _seed=0,
                                                       validate=False, data_dir='')
     X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
 
@@ -54,13 +65,21 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
     for (slope, reg_strength) in stuff_to_loop_over:
         kwargs['slope'] = slope
         kwargs['alpha_spectra'] = reg_strength
-        models = []  # container used to store all the trained models
-
-        for j in range(realizations):
-            model = ModelFactory(**kwargs)  # create model
-            for epoch in tqdm(range(num_epochs)):
-                model.train_epoch(train_loader, X_full)
-            models.append(model)
+        models = [ModelFactory(**kwargs) for j in range(realizations)]
+        if not parallel:
+            print('no vibes')
+            for j in range(realizations):
+                model = models[j]  # create model
+                for epoch in tqdm(range(num_epochs)):
+                    model.train_epoch(train_loader, X_full)
+                models.append(model)
+        else:
+            print('vibes')
+            del full_loader
+            models = Parallel(n_jobs=realizations)(delayed(train)(models[j],
+                                                                  batch_size,
+                                                                  num_epochs,
+                                                                  X_full) for j in range(realizations))
 
         model_params = []
         for idx in range(len(models)):
