@@ -10,7 +10,7 @@ import numpy as np
 import copy
 
 
-def bad_boy_vibes(tau=0, activation='tanh', cuda=False):
+def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
     """
     Runs a single layer MLP  with 2,000 hidden units on MNIST. The user can specify at what point in the eigenvalue
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
@@ -22,7 +22,6 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False):
     realizations = 3
     batch_size = 2500  # 1.25 times the widest layer in the network
     lr = 1e-3
-    num_epochs = 2
     stuff_to_loop_over = product(slopes, regularizers_strengths)
     # In[]
     "Load in data loader"
@@ -67,7 +66,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False):
         for idx in range(len(models)):
             model_params.append((kwargs, models[idx].state_dict()))
 
-        torch.save(model_params, 'experiment_1/tau=' + str(tau) + '_activation=' + activation)
+        torch.save(model_params, 'experiment_1/tau=' + str(tau) + '_activation=' + activation + '_epochs=' + str(num_epochs))
         counter += 1
         print(str(12 - counter) + " combos left")
 
