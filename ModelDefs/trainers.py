@@ -219,7 +219,8 @@ class EigenvalueRegularization(Trainer):
         self.compute_eig_vectors(X_full.to(self.device))
         X_full.to('cpu', non_blocking=True)
         torch.cuda.empty_cache()
-        for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=1, leave=True)):
+        # for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=1, leave=True)):
+        for _, (x, y) in enumerate(X):
             self.train_batch(x.to(self.device), y.to(self.device))
             x.to('cpu', non_blocking=True)
             y.to('cpu', non_blocking=True)
