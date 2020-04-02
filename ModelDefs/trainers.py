@@ -142,7 +142,7 @@ class JacobianRegularization(Trainer):
 class EigenvalueRegularization(Trainer):
 
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
-                 weight_decay=1e-5, alpha_spectra, only_last=False, slope=1):
+                 weight_decay=1e-5, alpha_spectra, only_last=False, slope=1, eig_start=10):
         super(EigenvalueRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
                                                lr=lr, weight_decay=weight_decay, max_iter=max_iter,
                                                save_name=save_name)
@@ -157,7 +157,7 @@ class EigenvalueRegularization(Trainer):
             self.slopes = list(slope * np.ones(self.numHiddenLayers))
         else:
             self.slopes = slope
-        self.eig_start = 10
+        self.eig_start = eig_start
         self.only_last = bool(only_last)
         self.eig_loader = None
 
@@ -226,11 +226,11 @@ class EigenvalueRegularization(Trainer):
 
 class EigenvalueAndJacobianRegularization(EigenvalueRegularization):
     def __init__(self, *, decoratee: BatchModifier, save_name=None, max_iter=100_000, optimizer='adam', lr=1e-3,
-                 weight_decay=1e-5, alpha_spectra, alpha_jacob, only_last=False, n=1, slope=-1):
+                 weight_decay=1e-5, alpha_spectra, alpha_jacob, only_last=False, n=1, slope=1, eig_start=10):
         super(EigenvalueAndJacobianRegularization, self).__init__(decoratee=decoratee, optimizer=optimizer,
                                                        lr=lr, weight_decay=weight_decay, max_iter=max_iter,
                                                        save_name=save_name, alpha_spectra=alpha_spectra,
-                                                                  only_last=only_last, slope=slope)
+                                                                  only_last=only_last, slope=slope, eig_start=eig_start)
         self.train_spectra = []  # store the (estimated) spectra of the network at the end of each epoch
         self.train_loss = []  # store the training loss (reported at the end of each epoch on the last batch)
         self.train_regularizer = []  # store the value of the regularizer during training
