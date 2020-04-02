@@ -154,7 +154,7 @@ class EigenvalueRegularization(Trainer):
         self.val_regularizer = []  # validation regularizer
         self.eig_vec = []
         self.alpha_spectra = alpha_spectra  # strength of regularizer
-        if ~isinstance(slope, list):
+        if not isinstance(slope, list):
             self.slopes = list(slope * np.ones(self.numHiddenLayers))
         else:
             self.slopes = slope
