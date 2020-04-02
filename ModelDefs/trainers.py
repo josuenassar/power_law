@@ -33,7 +33,8 @@ class Trainer(nn.Module):
         return self._batch_modifier(x)
 
     def train_epoch(self, X: DataLoader):
-        for _, (x, y) in enumerate(tqdm(X, desc="Training Batches", ascii=True, position=1, leave=True)):
+        # for _, (x, y) in enumerate(tqdm(X, desc="Training Batches", ascii=True, position=1, leave=True)):
+        for _, (x, y) in enumerate(X):
             self.train_batch(x.to(self.device), y.to(self.device))
             x.to('cpu', non_blocking=True)
             y.to('cpu', non_blocking=True)
