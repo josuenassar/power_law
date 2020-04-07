@@ -51,7 +51,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
-                  'slope': [1.00, 1.00, 1.0],
+                  'slope': [1.00],
                   'eig_start': tau}
         models = [ModelFactory(**kwargs) for j in range(realizations)]
         for j in range(realizations):
@@ -91,7 +91,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
-                  'slope': [1.00, 1.00, 1.0],
+                  'slope': [1.00],
                   'eig_start': tau}
 
         counter = 0
@@ -116,7 +116,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
             for idx in range(len(models)):
                 model_params.append((kwargs, models[idx].state_dict()))
 
-            torch.save(model_params, 'experiment_1/tau=' + str(tau) + '_activation=' + activation + '_epochs=' + str(num_epochs))
+            torch.save(model_params, 'experiment_1/tau=' + str(tau) + '_activation=' + activation + '_epochs=' + str(num_epochs) + '_alpha=' + str(slope) + '_beta=' + str(reg_strength))
             counter += 1
             print(str(len(slopes) * len(regularizers_strengths) - counter) + " combos left")
 
