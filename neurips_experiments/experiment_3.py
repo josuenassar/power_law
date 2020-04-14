@@ -33,7 +33,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             batch_size = 6912
         else:
             dims = [2, (3, 32), (32, 64), (1600, 1600), (1600, 10)]
-            batch_size = 9408
+            batch_size = 7500
     else:
         print("Doesnt exist!!")
     train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
