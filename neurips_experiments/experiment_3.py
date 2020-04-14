@@ -32,7 +32,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             dims = [2, (1, 32), (32, 64), (1024, 1024), (1024, 10)]
             batch_size = 6912
         else:
-            dims = [2, (3, 32), (32, 64), (1600, 1600), (1600, 10)]
+            dims = [2, (1, 32), (32, 64), (1600, 1600), (1600, 10)]
             batch_size = 7000
     else:
         print("Doesnt exist!!")
