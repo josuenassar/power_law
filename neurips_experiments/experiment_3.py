@@ -21,7 +21,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 #     return model
 
 
-def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=1, vanilla=False, dataset='MNIST', arch='cnn'):
+def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='MNIST', arch='cnn'):
     realizations = 3
     lr = 1e-3
     if arch == 'mlp':
