@@ -97,7 +97,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
-                  'slope': [1.00],
+                  'slope': 1.00,
                   'eig_start': tau}
 
         counter = 0
