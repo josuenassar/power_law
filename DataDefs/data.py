@@ -29,7 +29,7 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
             test_loader = DataLoader(train_set, batch_size=batch_size, sampler=test_sampler, **kwargs)
 
     elif dataset == "CIFAR10":  # TODO: copy data augmentation from Madry's paper
-        transform = transforms.Compose([transforms.ToTensor()])
+        transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
         # , transforms.Normalize((0.49137255, 0.48235294,
         #                                                                              0.44666667),
         #                      (0.24705882, 0.24352941, 0.26156863))])
