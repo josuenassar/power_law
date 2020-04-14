@@ -33,7 +33,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             batch_size = 6912
         else:
             dims = [2, (3, 32), (32, 64), (1600, 1600), (1600, 10)]
-            batch_size = 7500
+            batch_size = 7000
     else:
         print("Doesnt exist!!")
     train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
@@ -109,6 +109,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             for j in range(realizations):
                 for epoch in tqdm(range(num_epochs)):
                     models[j].train_epoch(train_loader, X_full)
+
             # else:
             #     print('vibes')
             #     del full_loader
