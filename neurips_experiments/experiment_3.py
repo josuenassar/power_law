@@ -74,7 +74,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                    'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
 
-        regularizers_strengths = [0.01, 1., 5.]
+        regularizers_strengths = [0.001, 1., 5.]
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
