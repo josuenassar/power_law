@@ -5,7 +5,6 @@ import numpy as np
 from ModelDefs.trainers import EigenvalueRegularization
 
 
-
 def get_data(dataset, batch_size, _seed, validate, data_dir):
     validation_split = 10_000
     kwargs = {'num_workers': 16, 'pin_memory': True}
