@@ -21,7 +21,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 #     return model
 
 
-def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='MNIST', arch='cnn'):
+def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='CIFAR10', arch='cnn'):
     realizations = 3
     lr = 1e-3
     if arch == 'mlp':
@@ -33,7 +33,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             batch_size = 6912
         else:
             dims = [2, (1, 32), (32, 64), (1600, 1600), (1600, 10)]
-            batch_size = 8000
+            batch_size = 8500
     else:
         print("Doesnt exist!!")
     train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
@@ -77,6 +77,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
+
 
         # In[]
         kwargs = {"dims": dims,
