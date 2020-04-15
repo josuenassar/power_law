@@ -32,8 +32,8 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             dims = [2, (1, 32), (32, 64), (1024, 1024), (1024, 10)]
             batch_size = 6912
         else:
-            dims = [2, (1, 32), (32, 64), (1600, 1600), (1600, 10)]
-            batch_size = 8500
+            dims = [2, (1, 20), (20, 40), (1000, 1000), (1000, 10)]
+            batch_size = 5880
     else:
         print("Doesnt exist!!")
     train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
@@ -73,7 +73,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                    'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
 
-        regularizers_strengths = [0.001, 1., 5.]
+        regularizers_strengths = [0.01, 1., 5.]
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
