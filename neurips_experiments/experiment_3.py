@@ -29,6 +29,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         batch_size = 1500
         dataset = 'MNIST'
     elif arch == 'cnn':
+        lr = 1e-4
         if dataset == 'MNIST':
             dims = [2, (1, 32), (32, 64), (1024, 1024), (1024, 10)]
             batch_size = 6912
