@@ -167,8 +167,8 @@ class CNN(ModelArchitecture):
         convModules = []
         for idx in range(self.numConvLayers):
             convModules.append(nn.Conv2d(dims[idx][0], dims[idx][-1], kernel_size=(5, 5)))
-            # if bn:
-            #     convModules.append(nn.BatchNorm1d(dims[idx][1]))
+            if bn:
+                convModules.append(nn.BatchNorm2d(dims[idx][1]))
             if activation == 'relu':
                 convModules.append(nn.ReLU())
             else:
