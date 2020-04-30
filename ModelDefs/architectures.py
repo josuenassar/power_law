@@ -203,11 +203,15 @@ class CNN(ModelArchitecture):
     def bothOutputs(self, x):
         hidden = [None] * self.numHiddenLayers
         convHidden = [None] * self.numConvLayers
+        if self.bn:
+            ell = 4
+        else:
+            ell = 3
         for idx in range(self.numConvLayers):
             if idx == 0:
-                convHidden[0] = self.convSequential[3 * idx: 3 * idx + 3](x)
+                convHidden[0] = self.convSequential[ell * idx: ell * idx + ell](x)
             else:
-                convHidden[idx] = self.convSequential[3 * idx: 3 * idx + 3](convHidden[idx - 1])
+                convHidden[idx] = self.convSequential[ell * idx: ell * idx + ell](convHidden[idx - 1])
             hidden[idx] = convHidden[idx].view(-1, convHidden[idx].shape[1] * convHidden[idx].shape[2]
                                                * convHidden[idx].shape[3])
         if self.bn:
