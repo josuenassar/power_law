@@ -48,7 +48,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   "trainer": "vanilla",
                   "regularizer": "no",
                   'alpha_jacob': 1e-4,
-                  'bn': False,
+                  'bn': True,
                   'alpha_spectra': 1,
                   'optimizer': 'adam',
                   'lr': lr,
