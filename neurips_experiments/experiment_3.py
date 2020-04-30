@@ -21,9 +21,9 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 #     return model
 
 
-def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='CIFAR10', arch='cnn'):
-    realizations = 3
-    lr = 1e-3
+def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='CIFAR10', arch='cnn',
+            realizations=1):
+    lr = 1e-4
     if arch == 'mlp':
         dims = [(28 * 28, 1_000), (1_000, 1_000), (1_000, 1_000), (1_000, 10)]
         batch_size = 1500
