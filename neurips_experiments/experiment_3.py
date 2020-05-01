@@ -74,8 +74,9 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         torch.save(model_params,
                    'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
-
-        regularizers_strengths = [1., 2, 5.]
+        beta = 2.
+        taus = [0, 10, 100, 500]
+        # regularizers_strengths = [1., 2, 5.]
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
@@ -89,7 +90,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   "regularizer": "eig",
                   'alpha_jacob': 1e-4,
                   'bn': False,
-                  'alpha_spectra': 1,
+                  'alpha_spectra': beta,
                   'optimizer': 'adam',
                   'lr': lr,
                   'weight_decay': 0,
@@ -104,8 +105,10 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   'eig_start': tau}
 
         counter = 0
-        for reg_strength in regularizers_strengths:
-            kwargs['alpha_spectra'] = reg_strength
+        # for reg_strength in regularizers_strengths:
+        for tau in taus:
+            # kwargs['alpha_spectra'] = reg_strength
+            kwargs['tau'] = tau
             models = [ModelFactory(**kwargs) for j in range(realizations)]
             # if not parallel:
             print('no vibes')
@@ -126,9 +129,10 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                 model_params.append((kwargs, models[idx].state_dict()))
 
             torch.save(model_params, 'experiment_3/' + dataset + '/tau=' + str(tau) + '_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
-                num_epochs) + '_alpha=' + str(1) + '_beta=' + str(reg_strength))
+                num_epochs) + '_alpha=' + str(1) + '_beta=' + str(beta))
             counter += 1
-            print(str(len(regularizers_strengths) - counter) + " combos left")
+            # print(str(len(regularizers_strengths) - counter) + " combos left")
+            print(str(len(taus) - counter) + " combos left")
 
 
 if __name__ == '__main__':
