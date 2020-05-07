@@ -166,7 +166,7 @@ class CNN(ModelArchitecture):
         # Construct convolutional layers
         convModules = []
         for idx in range(self.numConvLayers):
-            convModules.append(nn.Conv2d(dims[idx][0], dims[idx][-1], kernel_size=(5, 5)))
+            convModules.append(nn.Conv2d(dims[idx][0], dims[idx][-1], kernel_size=(3, 3)))
             if bn:
                 convModules.append(nn.BatchNorm2d(dims[idx][1]))
             if activation == 'relu':
