@@ -27,7 +27,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             batch_size = 6000
         else:
             dims = [2, (1, 16), (16, 32), (1152, 1000), (1000, 10)]
-            batch_size = 5880
+            batch_size = 6000
     else:
         print("Doesnt exist!!")
     train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
@@ -66,13 +66,10 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         torch.save(model_params,
                    'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
-        beta = 2.
-        taus = [0, 10, 100, 500]
-        # regularizers_strengths = [1., 2, 5.]
+        regularizers_strengths = [1., 2., 5.]
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
-
 
         # In[]
         kwargs = {"dims": dims,
@@ -82,7 +79,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   "regularizer": "eig",
                   'alpha_jacob': 1e-4,
                   'bn': False,
-                  'alpha_spectra': beta,
+                  'alpha_spectra': 1.0,
                   'optimizer': 'adam',
                   'lr': lr,
                   'weight_decay': 0,
@@ -97,34 +94,23 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   'eig_start': tau}
 
         counter = 0
-        # for reg_strength in regularizers_strengths:
-        for tau in taus:
-            # kwargs['alpha_spectra'] = reg_strength
-            kwargs['tau'] = tau
+        for reg_strength in regularizers_strengths:
+            kwargs['alpha_spectra'] = reg_strength
             models = [ModelFactory(**kwargs) for j in range(realizations)]
-            # if not parallel:
             print('no vibes')
             for j in range(realizations):
                 for epoch in tqdm(range(num_epochs)):
                     models[j].train_epoch(train_loader, X_full)
 
-            # else:
-            #     print('vibes')
-            #     del full_loader
-            #     models = Parallel(n_jobs=realizations)(delayed(train)(models[j],
-            #                                                           batch_size,
-            #                                                           num_epochs,
-            #                                                           X_full) for j in range(realizations))
 
             model_params = []
             for idx in range(len(models)):
                 model_params.append((kwargs, models[idx].state_dict()))
 
             torch.save(model_params, 'experiment_3/' + dataset + '/tau=' + str(tau) + '_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
-                num_epochs) + '_alpha=' + str(1) + '_beta=' + str(beta))
+                num_epochs) + '_alpha=' + str(1) + '_beta=' + str(reg_strength))
             counter += 1
-            # print(str(len(regularizers_strengths) - counter) + " combos left")
-            print(str(len(taus) - counter) + " combos left")
+            print(str(len(regularizers_strengths) - counter) + " combos left")
 
 
 if __name__ == '__main__':
