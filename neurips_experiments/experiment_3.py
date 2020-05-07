@@ -13,14 +13,6 @@ from joblib import Parallel, delayed
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-# def train(model, batch_size, num_epochs, X_full, dataset='MNIST'):
-#     train_loader, _, _ = get_data(dataset='MNIST', batch_size=batch_size, _seed=np.random.randint(100),
-#                                                       validate=False, data_dir='')
-#     for epoch in tqdm(range(num_epochs)):
-#         model.train_epoch(train_loader, X_full)
-#     return model
-
-
 def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='CIFAR10', arch='cnn',
             realizations=1):
     lr = 1e-4
@@ -31,10 +23,10 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
     elif arch == 'cnn':
         lr = 1e-4
         if dataset == 'MNIST':
-            dims = [2, (1, 32), (32, 64), (1024, 1024), (1024, 10)]
-            batch_size = 6912
+            dims = [2, (1, 16), (16, 32), (800, 1000), (1000, 10)]
+            batch_size = 6000
         else:
-            dims = [2, (1, 20), (20, 40), (1000, 1000), (1000, 10)]
+            dims = [2, (1, 16), (16, 32), (1152, 1000), (1000, 10)]
             batch_size = 5880
     else:
         print("Doesnt exist!!")
