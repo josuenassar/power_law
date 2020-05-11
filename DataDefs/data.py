@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 import numpy as np
 from ModelDefs.trainers import EigenvalueRegularization
-
+from MadryAugmentation import CIFAR10Augmented
 
 def get_data(dataset, batch_size, _seed, validate, data_dir):
     validation_split = 10_000
@@ -27,13 +27,17 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
             test_sampler = sampler.SubsetRandomSampler(valid_idx)
             test_loader = DataLoader(train_set, batch_size=batch_size, sampler=test_sampler, **kwargs)
 
-    elif dataset == "CIFAR10":  # TODO: copy data augmentation from Madry's paper
+    elif dataset in ["CIFAR10","CIFAR10Augmented"]:  # TODO: copy data augmentation from Madry's paper
         transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(),
                                         transforms.Normalize((0.4810,), (0.2392,))])
         # , transforms.Normalize((0.49137255, 0.48235294,
         #                                                                              0.44666667),
         #                      (0.24705882, 0.24352941, 0.26156863))])
-        train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=transform)
+        if dataset == "CIFAR10":
+            train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=transform)
+        elif dataset == "CIFAR10Augmented":
+            train_set = CIFAR10Augmented(root=data_dir, train=True, download=True,  transform=transform, grow_data_by=2)
+
         test_set = datasets.CIFAR10(root=data_dir, train=False, download=True,  transform=transform)
         num_train = len(train_set)
         indices = list(range(num_train))
