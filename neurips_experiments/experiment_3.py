@@ -34,6 +34,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                                             validate=False, data_dir='data/')
 
     if vanilla:
+        batch_size = 128
         kwargs = {"dims": dims,
                   "activation": activation,
                   "architecture": arch,
