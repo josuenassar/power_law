@@ -36,7 +36,12 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
         if dataset == "CIFAR10":
             train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=transform)
         elif dataset == "CIFAR10Augmented":
-            train_set = CIFAR10Augmented(root=data_dir, train=True, download=True,  transform=transform, grow_data_by=2)
+            augmented_transform = transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                                                  transforms.RandomCrop(32, padding=4),
+                                                                  transforms.RandomHorizontalFlip(),
+                                                                  transforms.ToTensor(),
+                                                                  transforms.Normalize((0.4810,), (0.2392,))])
+            train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=augmented_transform)
 
         test_set = datasets.CIFAR10(root=data_dir, train=False, download=True,  transform=transform)
         num_train = len(train_set)
