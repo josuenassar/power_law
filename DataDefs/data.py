@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 import numpy as np
 from ModelDefs.trainers import EigenvalueRegularization
-from MadryAugmentation import CIFAR10Augmented
+from .MadryAugmentation import CIFAR10Augmented
 
 def get_data(dataset, batch_size, _seed, validate, data_dir):
     validation_split = 10_000
