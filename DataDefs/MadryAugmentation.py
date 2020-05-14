@@ -10,6 +10,8 @@ import random
 from torchvision.datasets.vision import VisionDataset
 from torchvision.datasets.utils import check_integrity, download_and_extract_archive
 from torchvision import transforms
+from torchvision.datasets.cifar import CIFAR10 as baseCIFAR
+
 
 class CIFAR10Augmented(VisionDataset):
     """`CIFAR10 <https://www.cs.toronto.edu/~kriz/cifar.html>`_ Dataset.
@@ -50,7 +52,7 @@ class CIFAR10Augmented(VisionDataset):
     }
 
     def __init__(self, root, train=True, transform=None, target_transform=None,
-                 download=False, grow_data_by:int = 1):
+                 download=False, grow_data_by:int = 2):
 
         super(CIFAR10Augmented, self).__init__(root, transform=transform,
                                       target_transform=target_transform)
@@ -109,10 +111,10 @@ class CIFAR10Augmented(VisionDataset):
             downloaded_list = self.train_list
         else:
             downloaded_list = self.test_list
+        orig_data = []
+        orig_targets = []
         for file_name, checksum in downloaded_list:
             file_path = os.path.join(self.root, self.base_folder, file_name)
-            orig_data = []
-            orig_targets = []
             with open(file_path, 'rb') as f:
                 entry = pickle.load(f, encoding='latin1')
                 orig_data.append(entry['data'])
@@ -210,18 +212,13 @@ class CIFAR100Augmented(CIFAR10Augmented):
         'md5': '7973b15100ade9c7d40fb424638fde48',
     }
 
+
 class TestModel(unittest.TestCase):
     def test_download_and_augment(self):
         cls = CIFAR10Augmented(root=os.getcwd(), download=True)
-        for file_name, _ in cls.train_list:
-            file_path = os.path.join(cls.root, cls.base_folder, file_name)
-            with open(file_path, 'rb') as f:
-                # import pdb; pdb.set_trace()
-                entry = pickle.load(f, encoding='latin1')
-        raise EOFError
-        for file_name, _ in cls.train_list:
-            file_path = os.path.join(cls.root, cls.base_folder, file_name)
-            os.remove(file_path)
+        base = baseCIFAR(root=os.getcwd(),download=True)
+
+        self.assertEqual(len(cls), 50_000*cls.grow_data_by)
 
 
 if __name__ == '__main__':
