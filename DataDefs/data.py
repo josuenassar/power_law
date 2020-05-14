@@ -28,8 +28,7 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
             test_loader = DataLoader(train_set, batch_size=batch_size, sampler=test_sampler, **kwargs)
 
     elif dataset in ["CIFAR10","CIFAR10Augmented"]:  # TODO: copy data augmentation from Madry's paper
-        transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor(),
-                                        transforms.Normalize((0.4810,), (0.2392,))])
+        transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
         # , transforms.Normalize((0.49137255, 0.48235294,
         #                                                                              0.44666667),
         #                      (0.24705882, 0.24352941, 0.26156863))])
@@ -39,8 +38,7 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
             augmented_transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
                                                       transforms.RandomCrop(32, padding=4),
                                                       transforms.RandomHorizontalFlip(),
-                                                      transforms.ToTensor(),
-                                                      transforms.Normalize((0.4810,), (0.2392,))])
+                                                      transforms.ToTensor()])
             train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=augmented_transform)
 
         test_set = datasets.CIFAR10(root=data_dir, train=False, download=True,  transform=transform)
