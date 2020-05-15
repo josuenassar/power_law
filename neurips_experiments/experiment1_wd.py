@@ -17,7 +17,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
     :param tau: integer, at what point in the eigenvalue spectrum should we regularize
     """
     realizations = 3
-    batch_size = 3500  # 1.25 times the widest layer in the network
+    batch_size = 2500  # 1.25 times the widest layer in the network
     lr = 1e-3
     train_loader, _, full_loader = get_data(dataset='MNIST', batch_size=batch_size, _seed=0,
                                             validate=False, data_dir='')
