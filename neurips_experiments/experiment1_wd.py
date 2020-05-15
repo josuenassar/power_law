@@ -28,7 +28,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
                   "trainer": "vanilla",
                   "regularizer": "no",
                   'alpha_jacob': 1e-4,
-                  'bn': False,
+                  'bn': True,
                   'alpha_spectra': 1,
                   'optimizer': 'adam',
                   'lr': lr,
