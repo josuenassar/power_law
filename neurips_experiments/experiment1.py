@@ -21,7 +21,7 @@ def train(model, batch_size, num_epochs, X_full):
     return model
 
 
-def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=False, vanilla=False):
+def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=False, vanilla=False, lr=1e-3):
     """
     Runs a single layer MLP  with 2,000 hidden units on MNIST. The user can specify at what point in the eigenvalue
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
@@ -30,7 +30,6 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
     """
     realizations = 3
     batch_size = 3500  # 1.25 times the widest layer in the network
-    lr = 1e-4
     train_loader, _, full_loader = get_data(dataset='MNIST', batch_size=batch_size, _seed=0,
                                             validate=False, data_dir='')
     if vanilla:
