@@ -18,7 +18,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50):
     """
     realizations = 3
     batch_size = 3500  # 1.25 times the widest layer in the network
-    lr = 1e-4
+    lr = 1e-3
     train_loader, _, full_loader = get_data(dataset='MNIST', batch_size=batch_size, _seed=0,
                                             validate=False, data_dir='')
     weights = [0, 1e-4, 1e-3, 1e-2, 1e-1]
