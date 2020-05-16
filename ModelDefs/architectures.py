@@ -80,21 +80,25 @@ class MLP(ModelArchitecture):
 
 
 class Whiten(nn.Module):
-    def __init__(self, cuda=False, R=None):
+    def __init__(self, cuda=False, R=None, demean=False):
         super().__init__()
         self.device = 'cuda' if cuda else 'cpu'
         self.R = R
+        self.demean = demean
 
     def forward(self, input):
         "Compute covariance"
-        if self.R is None:
+        if self.demean:
             temp = input - torch.mean(input, 0)
+        else:
+            temp = input
+
+        if self.R is None:
             cov = temp.transpose(1, 0) @ temp / temp.shape[0]  # compute covariance matrix
             cov = (cov + cov.transpose(1, 0)) / 2 + 1e-5 * torch.eye(cov.shape[0], device=self.device)
             R = torch.cholesky(cov)  # returns the lower cholesky matrix
         else:
             R = self.R
-            temp = input - torch.mean(input, 0)
         Y, _ = torch.triangular_solve(temp.transpose(1, 0), R, upper=False)
         return Y.transpose(1, 0)
 
@@ -228,3 +232,45 @@ class CNN(ModelArchitecture):
 
         return hidden, self.linSequential[-1](hidden[-1])
 
+
+class CNN_Flat(CNN):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, h_in=28, w_in=28, R=None):
+        super().__init__(dims, activation=activation, bn=bn, cuda=cuda, h_in=h_in, w_in=w_in)
+        self.flat = Whiten(cuda=cuda, R=R)
+
+    def forward(self, x):
+        # TODO remove the reshaping
+        hT = self.convSequential(x)
+        return self.linSequential(self.flat(hT.view(-1, hT.shape[1] * hT.shape[2] * hT.shape[3])))
+
+    def bothOutputs(self, x):
+        hidden = [None] * self.numHiddenLayers
+        convHidden = [None] * self.numConvLayers
+        if self.bn:
+            ell = 4
+        else:
+            ell = 3
+        for idx in range(self.numConvLayers):
+            if idx == 0:
+                convHidden[0] = self.convSequential[ell * idx: ell * idx + ell](x)
+            else:
+                convHidden[idx] = self.convSequential[ell * idx: ell * idx + ell](convHidden[idx - 1])
+            temp = convHidden[idx].view(-1, convHidden[idx].shape[1] * convHidden[idx].shape[2]
+                                               * convHidden[idx].shape[3])
+            if idx + 1 == self.numConvLayers:
+                hidden[idx] = self.flat(temp)
+            else:
+                hidden[idx] = temp
+        if self.bn:
+            ell = 3
+        else:
+            ell = 2
+
+        for idx in range(self.numHiddenLayers - self.numConvLayers):
+            if idx == 0:
+                hidden[self.numConvLayers] = self.linSequential[ell * idx: ell * idx + ell](hidden[self.numConvLayers - 1])
+            else:
+                hidden[self.numConvLayers + idx] = self.linSequential[ell * idx: ell * idx + ell](hidden[self.numConvLayers
+                                                                                                         + idx - 1])
+
+        return hidden, self.linSequential[-1](hidden[-1])
