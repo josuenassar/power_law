@@ -87,7 +87,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   'weight_decay': 0,
                   'cuda': cuda,
                   'eps': 0.3,
-                  'only_last': False,
+                  'only_last': True,
                   'gradSteps': 40,
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
