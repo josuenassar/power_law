@@ -235,7 +235,7 @@ class CNN(ModelArchitecture):
 
 class CNN_Flat(CNN):
     def __init__(self, *, dims, activation='relu', bn=False, cuda=False, h_in=28, w_in=28, R=None):
-        super().__init__(dims, activation=activation, bn=bn, cuda=cuda, h_in=h_in, w_in=w_in)
+        super().__init__(dims=dims, activation=activation, bn=bn, cuda=cuda, h_in=h_in, w_in=w_in)
         self.flat = Whiten(cuda=cuda, R=R)
 
     def forward(self, x):
