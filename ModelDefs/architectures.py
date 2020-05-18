@@ -80,16 +80,20 @@ class MLP(ModelArchitecture):
 
 
 class Whiten(nn.Module):
-    def __init__(self, cuda=False, R=None, demean=True):
+    def __init__(self, cuda=False, R=None, mu=None, demean=True):
         super().__init__()
         self.device = 'cuda' if cuda else 'cpu'
         self.R = R
         self.demean = demean
+        self.mu = mu
 
     def forward(self, input):
         "Compute covariance"
         if self.demean:
-            temp = input - torch.mean(input, 0)
+            if self.mu is None:
+                temp = input - torch.mean(input, 0)
+            else:
+                temp = input - self.mu
         else:
             temp = input
 
