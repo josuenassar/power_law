@@ -80,7 +80,7 @@ class MLP(ModelArchitecture):
 
 
 class Whiten(nn.Module):
-    def __init__(self, cuda=False, R=None, demean=False):
+    def __init__(self, cuda=False, R=None, demean=True):
         super().__init__()
         self.device = 'cuda' if cuda else 'cpu'
         self.R = R
@@ -105,7 +105,7 @@ class Whiten(nn.Module):
 
 class Flat(ModelArchitecture):
     "A fully connected, 3 layer network where one of the hidden layers will have a white spectra"
-    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, R=None):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, R=None, demean=False):
         super().__init__(cuda=cuda)
         place = dims[0]
         dims = dims[1:]
@@ -122,7 +122,7 @@ class Flat(ModelArchitecture):
             if bn:
                 modules.append(nn.BatchNorm1d(dims[idx][1]))
             if idx == place:
-                modules.append(Whiten(cuda=cuda, R=R))
+                modules.append(Whiten(cuda=cuda, R=R, demean=demean))
         modules.append(nn.Linear(dims[-1][0], dims[-1][1]))
         self.sequential = nn.Sequential(*modules)
         self.max_neurons = max([dims[n][1] for n in range(self.numHiddenLayers)])
@@ -234,9 +234,9 @@ class CNN(ModelArchitecture):
 
 
 class CNN_Flat(CNN):
-    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, h_in=28, w_in=28, R=None):
+    def __init__(self, *, dims, activation='relu', bn=False, cuda=False, h_in=28, w_in=28, R=None, demean=False):
         super().__init__(dims=dims, activation=activation, bn=bn, cuda=cuda, h_in=h_in, w_in=w_in)
-        self.flat = Whiten(cuda=cuda, R=R)
+        self.flat = Whiten(cuda=cuda, R=R, demean=demean)
 
     def forward(self, x):
         # TODO remove the reshaping

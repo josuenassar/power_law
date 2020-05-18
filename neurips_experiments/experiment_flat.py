@@ -55,7 +55,8 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
                   'slope': [1.00],
-                  'eig_start': tau}
+                  'eig_start': tau,
+                  'demean': True}
         models = [ModelFactory(**kwargs) for j in range(realizations)]
         for j in range(realizations):
             for epoch in tqdm(range(num_epochs)):
@@ -93,7 +94,8 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
                   'slope': 1.00,
-                  'eig_start': tau}
+                  'eig_start': tau,
+                  'demean': True}
 
         counter = 0
         for reg_strength in regularizers_strengths:
