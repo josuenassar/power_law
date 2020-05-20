@@ -13,7 +13,8 @@ from joblib import Parallel, delayed
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='CIFAR10', arch='cnn',
+def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, jac=False, dataset='CIFAR10',
+            arch='cnn',
             realizations=3):
     lr = 1e-4
     if arch == 'mlp':
@@ -36,12 +37,16 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
     if vanilla:
         train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
                                                 validate=False, data_dir='data/')
+        if jac:
+            reg = 'no'
+        else:
+            reg = 'jac'
         kwargs = {"dims": dims,
                   "activation": activation,
                   "architecture": arch,
                   "trainer": "vanilla",
-                  "regularizer": "no",
-                  'alpha_jacob': 1e-4,
+                  "regularizer": reg,
+                  'alpha_jacob': .01,
                   'bn': False,
                   'alpha_spectra': 1,
                   'optimizer': 'adam',
@@ -64,9 +69,13 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         model_params = []
         for idx in range(len(models)):
             model_params.append((kwargs, models[idx].state_dict()))
-
-        torch.save(model_params,
-                   'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
+        if jac:
+            torch.save(model_params,
+                       'experiment_3/' + dataset + '/jac_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
+                           num_epochs))
+        else:
+            torch.save(model_params,
+                       'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
         regularizers_strengths = [5., 2., 1.]
         # In[]
