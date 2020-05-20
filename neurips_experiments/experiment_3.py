@@ -38,9 +38,9 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
                                                 validate=False, data_dir='data/')
         if jac:
-            reg = 'no'
-        else:
             reg = 'jac'
+        else:
+            reg = 'no'
         kwargs = {"dims": dims,
                   "activation": activation,
                   "architecture": arch,
