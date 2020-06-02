@@ -4,7 +4,7 @@ import unittest
 import os
 
 from torch.utils.data.dataloader import DataLoader
-from ModelDefs.architectures import MLP, CNN, Flat, CNN_Flat, ResNet_20
+from ModelDefs.architectures import MLP, CNN, Flat, CNN_Flat
 from ModelDefs.BatchModfier import AdversarialTraining, MLTraining
 from ModelDefs.trainers import NoRegularization, JacobianRegularization,\
     EigenvalueAndJacobianRegularization, EigenvalueRegularization
