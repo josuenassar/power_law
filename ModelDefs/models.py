@@ -28,7 +28,6 @@ def ModelFactory(**kwargs):
                'cnn': CNN,
                'flat': Flat,
                'cnn_flat': CNN_Flat,
-               'resnet': ResNet_20,
                'adv': AdversarialTraining,
                'vanilla': MLTraining,
                'no': NoRegularization,
