@@ -245,3 +245,18 @@ def eigen_val_regulate(x, v, eigT=None, start=10, device='cpu', slope=1):
             gamma = beta / ((n + 1) ** slope)
             regul += (eigs[n] / gamma - 1) ** 2 + torch.relu(eigs[n] / gamma - 1)
     return eigs, regul / x.shape[1]
+
+
+def jacobian_eig(x, eig_idx, model):
+    "Get gradient for images"
+    x.requires_grad_(True)
+    hiddens, _ = model.bothOutputs(x)
+    temp = hiddens[-1]
+    temp2 = hiddens[-1] - torch.mean(hiddens[-1], 0)
+    print(temp2.shape)
+    cov = temp2.t() @ temp2 / temp2.shape[0]
+    cov = (cov + cov.t()) / 2
+    eigs, _ = torch.symeig(cov, eigenvectors=True)
+    print(eigs.shape)
+    gradient = torch.autograd.grad(eigs[-1 + eig_idx], x)[0]
+    return gradient
