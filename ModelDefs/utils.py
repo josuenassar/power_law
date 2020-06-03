@@ -247,12 +247,11 @@ def eigen_val_regulate(x, v, eigT=None, start=10, device='cpu', slope=1):
     return eigs, regul / x.shape[1]
 
 
-def jacobian_eig(x, eig_idx, model):
+def jacobian_eig(x, eig_idx, model, layer=-1):
     "Get gradient for images"
     x.requires_grad_(True)
     hiddens, _ = model.bothOutputs(x)
-    temp = hiddens[-1]
-    temp2 = hiddens[-1] - torch.mean(hiddens[-1], 0)
+    temp2 = hiddens[layer] - torch.mean(hiddens[layer], 0)
     print(temp2.shape)
     cov = temp2.t() @ temp2 / temp2.shape[0]
     cov = (cov + cov.t()) / 2
