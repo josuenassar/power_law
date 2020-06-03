@@ -5,7 +5,7 @@ import numpy as np
 from ModelDefs.trainers import EigenvalueRegularization
 from .MadryAugmentation import CIFAR10Augmented
 
-def get_data(dataset, batch_size, _seed, validate, data_dir):
+def get_data(dataset, batch_size, _seed, validate, data_dir, shuffle=False):
     validation_split = 10_000
     kwargs = {'num_workers': 16, 'pin_memory': True}
     if dataset == "MNIST":
@@ -68,7 +68,7 @@ def get_data(dataset, batch_size, _seed, validate, data_dir):
     train_loader = DataLoader(train_set, batch_size=batch_size, sampler=train_sampler,
                               **kwargs)
     full_loader = DataLoader(train_set, batch_size=num_train, sampler=train_sampler,
-                             **kwargs)
+                             **kwargs, shuffle=shuffle)
 
     return train_loader, test_loader, full_loader
 
