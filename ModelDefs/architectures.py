@@ -352,9 +352,9 @@ class BasicBlock(nn.Module):
         return out
 
 
-class ResNet(nn.Module):
-    def __init__(self, block, num_blocks, num_classes=10):
-        super(ResNet, self).__init__()
+class ResNet(ModelArchitecture):
+    def __init__(self, block, num_blocks, num_classes=10, cuda=True):
+        super(ResNet, self).__init__(cuda=cuda)
         self.in_planes = 16
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
@@ -398,3 +398,7 @@ class ResNet(nn.Module):
         hiddens.append(out.view(out.size(0), -1))
         out = self.linear(out)
         return out
+
+
+def resnet20(cuda=True):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda)
