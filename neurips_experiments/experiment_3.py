@@ -36,6 +36,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
                                             validate=False, data_dir='data/')
 
     if vanilla:
+        batch_size = 100
         train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
                                                 validate=False, data_dir='data/')
         if jac:
