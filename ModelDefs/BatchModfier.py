@@ -23,9 +23,11 @@ class AdversarialTraining(BatchModifier):
     """
     Class that will be in charge of generating batches of adversarial images
     """
-    def __init__(self, *, decoratee, eps, lr_pgd, gradSteps, noRestarts, training_type='PGD'):
+    def __init__(self, *, decoratee, eps, lr_pgd, gradSteps, noRestarts, training_type='PGD', lb=0, ub=1):
         super(AdversarialTraining, self).__init__(decoratee=decoratee)
         self.eps = eps  # radius of l infinity ball
+        self.lb = lb
+        self.ub = ub
         # self.lr = alpha.to(decoratee.device)
         self.lr = lr_pgd
         self.gradSteps = gradSteps  # number of gradient steps to take
@@ -59,7 +61,7 @@ class AdversarialTraining(BatchModifier):
         ell = losses[idx]
         return x, ell
 
-    def pgd(self, x_nat, x, y, lb=0, ub=1):
+    def pgd(self, x_nat, x, y):
         """
         Perform projected gradient descent from Madry et al 2018
         :param x_nat: starting image
@@ -71,7 +73,7 @@ class AdversarialTraining(BatchModifier):
             jacobian, ell = self.get_jacobian(x, y)  # get jacobian
             xT = (x + self.lr * torch.sign(jacobian)).detach()
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
-            xT = torch.clamp(xT, lb, ub)
+            xT = torch.clamp(xT, self.lb, self.ub)
             x = xT
             del xT
         ell = self.loss(self._architecture(x), y)
