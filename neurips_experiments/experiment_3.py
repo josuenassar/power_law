@@ -27,6 +27,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             dims = [2, (1, 16), (16, 32), (800, 1000), (1000, 10)]
             batch_size = 6000
         else:
+            lr = 1e-3
             dims = [2, (3, 16), (16, 32), (1152, 1000), (1000, 10)]
             batch_size = 6000
     else:
@@ -77,7 +78,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             torch.save(model_params,
                        'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
-        regularizers_strengths = [5., 2., 1.]
+        regularizers_strengths = [2., 1., 5.]
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
