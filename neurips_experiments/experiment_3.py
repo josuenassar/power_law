@@ -27,7 +27,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             dims = [2, (1, 16), (16, 32), (800, 1000), (1000, 10)]
             batch_size = 6000
         else:
-            lr = 1e-3
+            lr = 1e-4
             dims = [3, (3, 16), (16, 32), (32, 64), (256, 256), (256, 10)]
             batch_size = 6000
     else:
