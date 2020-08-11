@@ -325,6 +325,7 @@ class VGG3(ModelArchitecture):
         self.block1 = VGG_Block(3, 32, activation=activation)
         self.block2 = VGG_Block(32, 64, activation=activation)
         self.block3 = VGG_Block(64, 128, activation=activation)
+        self.numHiddenLayers = 3
         self.fc = nn.Linear(512, 10)
 
     def forward(self, x):
