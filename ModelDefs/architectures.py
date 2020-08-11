@@ -332,7 +332,8 @@ class VGG3(ModelArchitecture):
     def forward(self, x):
         out = self.block1(x)
         out = self.block2(out)
-        out = self.block3(out)
+        # out = self.block3(out)
+        out = self.block3(out.view(out.size(0), -1))
         return self.fc(out.view(out.size(0), -1))
 
     def bothOutputs(self, x):
