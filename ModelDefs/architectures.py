@@ -331,7 +331,7 @@ class VGG3(ModelArchitecture):
         out = self.block1(x)
         out = self.block2(out)
         out = self.block3(out)
-        return self.fc(out)
+        return self.fc(out.view(out.size(0), -1))
 
     def bothOutputs(self, x):
         hiddens = []
