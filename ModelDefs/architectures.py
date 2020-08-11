@@ -322,16 +322,16 @@ class VGG_Block(nn.Module):
 class VGG3(ModelArchitecture):
     def __init__(self, *, dims, activation='relu', bn=False, cuda=False):
         super().__init__(cuda=cuda)
-        self.block1 = VGG_Block(3, 32, activation=activation)
+        self.block1 = VGG_Block(1, 32, activation=activation)
         self.block2 = VGG_Block(32, 64, activation=activation)
-        # self.block3 = VGG_Block(64, 128, activation=activation)
+        self.block3 = VGG_Block(64, 128, activation=activation)
         self.numHiddenLayers = 3
-        self.fc = nn.Linear(2304, 10)
+        self.fc = nn.Linear(512, 10)
 
     def forward(self, x):
         out = self.block1(x)
         out = self.block2(out)
-        # out = self.block3(out)
+        out = self.block3(out)
         return self.fc(out.view(out.size(0), -1))
 
     def bothOutputs(self, x):
@@ -340,6 +340,6 @@ class VGG3(ModelArchitecture):
         hiddens.append(out.view(out.size(0), -1))
         out = self.block2(out)
         hiddens.append(out.view(out.size(0), -1))
-        # out = self.block3(out)
-        # hiddens.append(out.view(out.size(0), -1))
+        out = self.block3(out)
+        hiddens.append(out.view(out.size(0), -1))
         return hiddens, self.fc(out.view(out.size(0), -1))
