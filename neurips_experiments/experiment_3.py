@@ -45,7 +45,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             reg = 'no'
         kwargs = {"dims": dims,
                   "activation": activation,
-                  "architecture": arch,
+                  "architecture": 'vgg',
                   "trainer": "vanilla",
                   "regularizer": reg,
                   'alpha_jacob': .01,
