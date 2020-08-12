@@ -13,7 +13,7 @@ from joblib import Parallel, delayed
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=2, dataset='CIFAR10', arch='cnn_flat',
+def bad_boy(tau=10, activation='tanh', cuda=torch.cuda.is_available(), num_epochs=2, dataset='CIFAR10', arch='cnn_flat',
             realizations=3):
     lrs = [1e-6,1e-5,1e-4,1e-3,1e-2]
     if arch == 'flat':
