@@ -29,7 +29,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         else:
             lr = 1e-3
             dims = [3, (3, 16), (16, 32), (32, 64), (256, 256), (256, 10)]
-            batch_size = 6000
+            batch_size = 10_000
     else:
         print("Doesnt exist!!")
     train_loader, _, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=0,
@@ -45,7 +45,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             reg = 'no'
         kwargs = {"dims": dims,
                   "activation": activation,
-                  "architecture": arch,
+                  "architecture": 'vgg',
                   "trainer": "vanilla",
                   "regularizer": reg,
                   'alpha_jacob': .01,
@@ -79,7 +79,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
             torch.save(model_params,
                        'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
-        regularizers_strengths = [2., 1.]
+        regularizers_strengths = [.01, .1, 2]
         # In[]
         "Load in data loader"
         X_full, _ = next(iter(full_loader))  # load in full training set for eigenvectors
@@ -87,7 +87,7 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
         # In[]
         kwargs = {"dims": dims,
                   "activation": activation,
-                  "architecture": arch,
+                  "architecture": 'vgg',
                   "trainer": "vanilla",
                   "regularizer": "eig",
                   'alpha_jacob': 1e-4,

@@ -29,9 +29,14 @@ def get_data(dataset, batch_size, _seed, validate, data_dir, shuffle=False):
 
     elif dataset in ["CIFAR10","CIFAR10Augmented"]:  # TODO: copy data augmentation from Madry's paper
         # transform = transforms.Compose([transforms.Grayscale(num_output_channels=1), transforms.ToTensor()])
-        transform = transforms.Compose([transforms.ToTensor(),
-                                        transforms.Normalize((0.49137255, 0.48235294, 0.44666667),
-                                                             (0.24705882, 0.24352941, 0.26156863)),
+        # transform = transforms.Compose([transforms.ToTensor(),
+        #                                 transforms.Normalize((0.49137255, 0.48235294, 0.44666667),
+        #                                                      (0.24705882, 0.24352941, 0.26156863)),
+        #                                 ])
+        transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                        transforms.ToTensor(),
+                                        transforms.Normalize((0.5,),
+                                                             (0.5,)),
                                         ])
         if dataset == "CIFAR10":
             train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=transform)
@@ -40,11 +45,18 @@ def get_data(dataset, batch_size, _seed, validate, data_dir, shuffle=False):
             #                                           transforms.RandomCrop(32, padding=4),
             #                                           transforms.RandomHorizontalFlip(),
             #                                           transforms.ToTensor(),])
-            augmented_transform = transforms.Compose([transforms.RandomCrop(32, padding=4),
+            # augmented_transform = transforms.Compose([transforms.RandomCrop(32, padding=4),
+            #                                           transforms.RandomHorizontalFlip(),
+            #                                           transforms.ToTensor(),
+            #                                           transforms.Normalize((0.49137255, 0.48235294, 0.44666667),
+            #                                                                (0.24705882, 0.24352941, 0.26156863)),
+            #                                           ])
+            augmented_transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
+                                                      transforms.RandomCrop(32, padding=4),
                                                       transforms.RandomHorizontalFlip(),
                                                       transforms.ToTensor(),
-                                                      transforms.Normalize((0.49137255, 0.48235294, 0.44666667),
-                                                                           (0.24705882, 0.24352941, 0.26156863)),
+                                                      transforms.Normalize((0.5,),
+                                                                           (0.5,)),
                                                       ])
             train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=augmented_transform)
 
