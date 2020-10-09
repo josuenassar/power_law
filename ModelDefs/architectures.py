@@ -346,16 +346,16 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(ModelArchitecture):
-    def __init__(self, block, num_blocks, num_classes=10):
-        super(ResNet, self).__init__()
-        self.in_planes = 16
+    def __init__(self, block, num_blocks, num_classes=10, cuda=False):
+        super(ResNet, self).__init__(cuda=cuda)
+        self.in_planes = 8
 
-        self.conv1 = nn.Conv2d(3, 16, kernel_size=3, stride=1, padding=1, bias=False)
+        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1, bias=False)
         # self.bn1 = nn.BatchNorm2d(16)
-        self.layer1 = self._make_layer(block, 16, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 32, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 64, num_blocks[2], stride=2)
-        self.linear = nn.Linear(64, num_classes)
+        self.layer1 = self._make_layer(block, 8, num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(block, 16, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, 32, num_blocks[2], stride=2)
+        self.linear = nn.Linear(32, num_classes)
 
         self.apply(_weights_init)
 
@@ -391,14 +391,14 @@ class ResNet(ModelArchitecture):
 
         # Third block
         out = self.layer3(out)
-        out = F.avg_pool2d(out, out.size()[3])
-        out = out.view(out.size(0), -1)
         hiddens.append(out.view(out.size(0), -1))
 
         # Read out
+        out = F.avg_pool2d(out, out.size()[3])
+        out = out.view(out.size(0), -1)
         out = self.linear(out)
         return hiddens, out
 
 
-def resnet20():
-    return ResNet(BasicBlock, [3, 3, 3])
+def resnet20(cuda=False):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda)
