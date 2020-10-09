@@ -4,7 +4,7 @@ import unittest
 import os
 
 from torch.utils.data.dataloader import DataLoader
-from ModelDefs.architectures import MLP, CNN, Flat, CNN_Flat, VGG3
+from ModelDefs.architectures import MLP, CNN, Flat, CNN_Flat, resnet20
 from ModelDefs.BatchModfier import AdversarialTraining, MLTraining
 from ModelDefs.trainers import NoRegularization, JacobianRegularization,\
     EigenvalueAndJacobianRegularization, EigenvalueRegularization
@@ -28,7 +28,7 @@ def ModelFactory(**kwargs):
                'cnn': CNN,
                'flat': Flat,
                'cnn_flat': CNN_Flat,
-               'vgg': VGG3,
+               'resnet': resnet20,
                'adv': AdversarialTraining,
                'vanilla': MLTraining,
                'no': NoRegularization,
