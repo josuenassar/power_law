@@ -33,6 +33,10 @@ def get_data(dataset, batch_size, _seed, validate, data_dir, shuffle=False):
         #                                 transforms.Normalize((0.49137255, 0.48235294, 0.44666667),
         #                                                      (0.24705882, 0.24352941, 0.26156863)),
         #                                 ])
+        # transform = transforms.Compose([transforms.ToTensor(),
+        #                                 transforms.Normalize((0.5, 0.5, 0.5),
+        #                                                      (0.5, 0.5, 0.5)),
+        #                                 ])
         transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
                                         transforms.ToTensor(),
                                         transforms.Normalize((0.5,),
