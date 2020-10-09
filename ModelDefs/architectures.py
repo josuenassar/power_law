@@ -398,3 +398,7 @@ class ResNet(ModelArchitecture):
         # Read out
         out = self.linear(out)
         return hiddens, out
+
+
+def resnet20():
+    return ResNet(BasicBlock, [3, 3, 3])
