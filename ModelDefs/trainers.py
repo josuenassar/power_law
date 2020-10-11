@@ -22,7 +22,7 @@ class Trainer(nn.Module):
             self.optimizer = Adam(params=self.parameters(),
                                   lr=lr, weight_decay=weight_decay, amsgrad=True)
         elif optimizer.lower() == 'sgd':
-            self.optimizer = SGD(params=self.parameters(), lr=lr, weight_decay=weight_decay)
+            self.optimizer = SGD(params=self.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decay)
         elif optimizer.lower() == 'rms':
             self.optimizer = RMSprop(params=self.parameters(), lr=lr, weight_decay=weight_decay)
         else:
