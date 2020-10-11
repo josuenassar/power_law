@@ -35,8 +35,8 @@ def get_data(dataset, batch_size, _seed, validate, data_dir, shuffle=False):
         #                                 ])
         transform = transforms.Compose([transforms.Grayscale(num_output_channels=1),
                                         transforms.ToTensor(),
-                                        transforms.Normalize((0.5,),
-                                                             (0.5,)),
+                                        transforms.Normalize((0.4791,),
+                                                             (0.2392,)),
                                         ])
         if dataset == "CIFAR10":
             train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=transform)
@@ -51,8 +51,8 @@ def get_data(dataset, batch_size, _seed, validate, data_dir, shuffle=False):
                                                       transforms.RandomCrop(32, padding=4),
                                                       transforms.RandomHorizontalFlip(),
                                                       transforms.ToTensor(),
-                                                      transforms.Normalize((0.5,),
-                                                                           (0.5,)),
+                                                      transforms.Normalize((0.4791,),
+                                                                           (0.2392,)),
                                                       ])
             train_set = datasets.CIFAR10(root=data_dir, train=True, download=True,  transform=augmented_transform)
 
