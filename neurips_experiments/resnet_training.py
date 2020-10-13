@@ -20,8 +20,10 @@ dataset = 'CIFAR10'
 no_seeds = 3
 seeds = [100, 200, 300]
 cuda = False
+device = 'cpu'
 if torch.cuda.is_available():
     cuda = True
+    device = 'cuda'
 kwargs = {"dims": [],
           "activation": 'relu',
           "architecture": 'resnet',
@@ -49,6 +51,7 @@ models = []
 for j in range(len(seeds)):
     train_loader, test_loader, _ = get_data(dataset=dataset, batch_size=batch_size, _seed=seeds[j],
                                             validate=False, data_dir='data/')
+    X_test, Y_test = next(iter(test_loader))
     torch.manual_seed(seeds[j] + 1)
     models.append(ModelFactory(**kwargs))
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(models[j].optimizer, milestones=[100, 150])
@@ -56,6 +59,11 @@ for j in range(len(seeds)):
     for epoch in tqdm(range(num_epochs)):
         models[j].train_epoch(train_loader)
         lr_scheduler.step()
+        if epoch % 10 == 0:
+            y_hat = models[j](X_test.to(device))
+            _, predicted = torch.max(y_hat.to(device), 1)
+            mce = (predicted != Y_test.data).float().mean().item()
+            print(mce)
 
 model_params = []
 for idx in range(len(models)):
