@@ -32,7 +32,7 @@ kwargs = {"dims": [],
           'alpha_jacob': 1e-4,
           'bn': False,
           'alpha_spectra': 1,
-          'lr': 0.1,
+          'lr': 0.001,
           'optimizer': 'adam',
           'weight_decay': weight_decay,
           'cuda': cuda,
@@ -54,11 +54,11 @@ for j in range(len(seeds)):
     X_test, Y_test = next(iter(test_loader))
     torch.manual_seed(seeds[j] + 1)
     models.append(ModelFactory(**kwargs))
-    lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(models[j].optimizer, milestones=[100, 150])
+    # lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(models[j].optimizer, milestones=[100, 150])
     counter = 0
     for epoch in tqdm(range(num_epochs)):
         models[j].train_epoch(train_loader)
-        lr_scheduler.step()
+        # lr_scheduler.step()
         if epoch % 10 == 0:
             y_hat = models[j](X_test.to(device))
             _, predicted = torch.max(y_hat.to(device), 1)
