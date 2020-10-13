@@ -352,7 +352,7 @@ class ResNet(ModelArchitecture):
         super(ResNet, self).__init__(cuda=cuda)
         self.in_planes = 8
 
-        self.conv1 = nn.Conv2d(1, 8, kernel_size=3, stride=1, padding=1, bias=True)
+        self.conv1 = nn.Conv2d(3, 8, kernel_size=3, stride=1, padding=1, bias=True)
         # self.bn1 = nn.BatchNorm2d(16)
         self.layer1 = self._make_layer(block, 8, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 16, num_blocks[1], stride=2)
