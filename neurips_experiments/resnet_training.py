@@ -16,7 +16,7 @@ the extract training details from resnet paper.
 batch_size = 128
 weight_decay = .0001
 num_epochs = 200
-dataset = 'CIFAR10'
+dataset = 'CIFAR10Augmented'
 no_seeds = 3
 seeds = [100, 200, 300]
 cuda = False
