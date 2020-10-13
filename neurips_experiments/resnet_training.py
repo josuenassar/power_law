@@ -20,6 +20,8 @@ dataset = 'CIFAR10'
 no_seeds = 3
 seeds = [100, 200, 300]
 cuda = False
+if torch.cuda.is_available():
+    cuda = True
 kwargs = {"dims": [],
           "activation": 'relu',
           "architecture": 'resnet',
