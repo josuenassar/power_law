@@ -303,7 +303,7 @@ def _weights_init(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         init.kaiming_normal_(m.weight)
         if m.bias is not None:
-            m.bias.fill_(0)
+            m.bias.data.fill_(0)
 
 
 class LambdaLayer(nn.Module):
