@@ -86,7 +86,13 @@ class AdversarialTraining(BatchModifier):
 
     def FGSM(self, x_nat, y):
         perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-        jacobian, ell = self.get_jacobian(torch.clamp(x_nat + perturb, self.lb, self.ub), y)  # get jacobian
+        if x_nat.shape[0] == 1:
+            # if just one channel, then lb and ub are just numbers
+            x_nat = torch.clamp(x_nat + perturb, self.lb, self.ub)
+        else:
+            # for more than one channel, need channel specific lb and ub
+            x_nat = self.clip(x_nat + perturb, self.lb, self.ub)
+        jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
         x_nat = x_nat.detach()
         if x_nat.shape[0] == 1:
             # if just one channel, then lb and ub are just numbers
