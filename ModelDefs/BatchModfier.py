@@ -73,7 +73,12 @@ class AdversarialTraining(BatchModifier):
             jacobian, ell = self.get_jacobian(x, y)  # get jacobian
             xT = (x + self.lr * torch.sign(jacobian)).detach()
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
-            xT = torch.clamp(xT, self.lb, self.ub)
+            if x_nat.shape[0] == 1:
+                # if just one channel, then lb and ub are just numbers
+                xT = torch.clamp(xT, self.lb, self.ub)
+            else:
+                # for more than one channel, need channel specific lb and ub
+                xT = self.clip(xT, self.lb, self.ub)
             x = xT
             del xT
         ell = self.loss(self._architecture(x), y)
@@ -81,11 +86,15 @@ class AdversarialTraining(BatchModifier):
 
     def FGSM(self, x_nat, y):
         perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-        jacobian, ell = self.get_jacobian(torch.clamp(x_nat + perturb, 0, 1), y)  # get jacobian
+        jacobian, ell = self.get_jacobian(torch.clamp(x_nat + perturb, self.lb, self.ub), y)  # get jacobian
         x_nat = x_nat.detach()
-        x_adv = torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1).detach()
+        if x_nat.shape[0] == 1:
+            # if just one channel, then lb and ub are just numbers
+            x_adv = torch.clamp(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
+        else:
+            # for more than one channel, need channel specific lb and ub
+            x_adv = self.clip(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
         return x_adv, ell
-
 
     @staticmethod
     def clip(T, Tmin, Tmax):
