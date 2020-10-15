@@ -348,16 +348,16 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(ModelArchitecture):
-    def __init__(self, block, num_blocks, num_classes=10, cuda=False):
+    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4):
         super(ResNet, self).__init__(cuda=cuda)
-        self.in_planes = 4
+        self.in_planes = n_filters
 
-        self.conv1 = nn.Conv2d(3, 4, kernel_size=3, stride=1, padding=1, bias=True)
-        self.bn1 = nn.BatchNorm2d(4)
-        self.layer1 = self._make_layer(block, 4, num_blocks[0], stride=1)
-        self.layer2 = self._make_layer(block, 8, num_blocks[1], stride=2)
-        self.layer3 = self._make_layer(block, 16, num_blocks[2], stride=2)
-        self.linear = nn.Linear(16, num_classes)
+        self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        self.bn1 = nn.BatchNorm2d(n_filters)
+        self.layer1 = self._make_layer(block, n_filters, num_blocks[0], stride=1)
+        self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
+        self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)
+        self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
 
         self.apply(_weights_init)
 
@@ -402,5 +402,5 @@ class ResNet(ModelArchitecture):
         return hiddens, out
 
 
-def resnet20(cuda=False):
-    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda)
+def resnet20(cuda=False, n_filters=4):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters)
