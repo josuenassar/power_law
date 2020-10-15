@@ -73,7 +73,7 @@ class AdversarialTraining(BatchModifier):
             jacobian, ell = self.get_jacobian(x, y)  # get jacobian
             xT = (x + self.lr * torch.sign(jacobian)).detach()
             xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
-            if x_nat.shape[0] == 1:
+            if x_nat.shape[1] == 1:
                 # if just one channel, then lb and ub are just numbers
                 xT = torch.clamp(xT, self.lb, self.ub)
             else:
@@ -86,7 +86,7 @@ class AdversarialTraining(BatchModifier):
 
     def FGSM(self, x_nat, y):
         perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-        if x_nat.shape[0] == 1:
+        if x_nat.shape[1] == 1:
             # if just one channel, then lb and ub are just numbers
             x_nat = torch.clamp(x_nat + perturb, self.lb, self.ub)
         else:
@@ -94,7 +94,7 @@ class AdversarialTraining(BatchModifier):
             x_nat = self.clip(x_nat + perturb, self.lb, self.ub)
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
         x_nat = x_nat.detach()
-        if x_nat.shape[0] == 1:
+        if x_nat.shape[1] == 1:
             # if just one channel, then lb and ub are just numbers
             x_adv = torch.clamp(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
         else:
