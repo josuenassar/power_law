@@ -52,7 +52,7 @@ def run(filters=[4, 8, 16], checkpoint=True):
                   'weight_decay': weight_decay,
                   'cuda': cuda,
                   'eps': 0.3,
-                  'only_last': False,
+                  'only_last': True,
                   'gradSteps': 40,
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
