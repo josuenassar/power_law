@@ -68,7 +68,7 @@ for n_filters, batch_size in zip(filters, batch_sizes):
         counter = 0
         for epoch in tqdm(range(num_epochs)):
             models[j].train()
-            models[j].train_epoch(train_loader)
+            models[j].train_epoch(train_loader, X_full)
 
         with torch.no_grad():
             models[j].eval()
