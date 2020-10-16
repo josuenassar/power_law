@@ -20,7 +20,7 @@ dataset = 'CIFAR10Augmented'
 no_seeds = 3
 seeds = [100, 200, 300]
 cuda = False
-filters = [16, 8, 4]
+filters = [4, 8, 16]
 device = 'cpu'
 if torch.cuda.is_available():
     cuda = True
@@ -48,7 +48,8 @@ if __name__ == '__main__':
                   'training_type': 'FGSM',
                   'slope': [1.00],
                   'eig_start': 10,
-                  'n_filters': n_filters}
+                  'n_filters': n_filters,
+                  'checkpoint': False}
 
         models = []
         for j in range(len(seeds)):
