@@ -362,8 +362,10 @@ class ResNet(ModelArchitecture):
 
         self.apply(_weights_init)
         self.cp = cp
-        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if self.cp \
-            else lambda f, inpt, **kv: f(inpt, **kv)
+        if self.cp:
+            self.checkpoint = lambda f, inpt, **kv: checkpoint_sequential(f, nchunks, inpt, **kv)
+        else:
+            self.checkpoint = lambda f, inpt, **kv: f(inpt, **kv)
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -386,23 +388,26 @@ class ResNet(ModelArchitecture):
         return out
 
     def bothOutputs(self, x, only_last=False):
-        cp = self.checkpoint
         hiddens = []
-        # First block
-        out = cp(self.layer0, x)
-        out = cp(self.layer1, out)
-        if not only_last:
+        if only_last:
+            out = self.layer3(self.layer2(self.layer1(self.layer0(x))))
+            hiddens.append(out.view(out.size(0), -1))
+        else:
+            cp = self.checkpoint
+
+            # First block
+            out = cp(self.layer0, x)
+            out = cp(self.layer1, out)
             hiddens.append(out.view(out.size(0), -1))
 
-        # Second block
-        out = cp(self.layer2, out)
-        if not only_last:
+            # Second block
+            out = cp(self.layer2, out)
             hiddens.append(out.view(out.size(0), -1))
 
-        # Third block
-        out = cp(self.layer3, out)
-        # out = self.layer3(out)
-        hiddens.append(out.view(out.size(0), -1))
+            # Third block
+            out = cp(self.layer3, out)
+            # out = self.layer3(out)
+            hiddens.append(out.view(out.size(0), -1))
 
         # Read out
         out = F.avg_pool2d(out, out.size()[3])
