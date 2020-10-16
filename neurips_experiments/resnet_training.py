@@ -49,7 +49,7 @@ if __name__ == '__main__':
                   'slope': [1.00],
                   'eig_start': 10,
                   'n_filters': n_filters,
-                  'checkpoint': False}
+                  'cp': False}
 
         models = []
         for j in range(len(seeds)):
