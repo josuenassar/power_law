@@ -22,7 +22,7 @@ class ModelArchitecture(nn.Module):
     def forward(self, x):
         raise NotImplementedError
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         raise NotImplementedError
 
     def get_jacobian(self, x, y):
@@ -42,7 +42,7 @@ class Linear(ModelArchitecture):
     def forward(self, x):
         return self.sequential(x)
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         return None, self.forward(x)
 
 
@@ -152,7 +152,7 @@ class Flat(ModelArchitecture):
         # TODO vectorize inputs
         return self.sequential(x)
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         x = x.view(x.size(0), -1)
 
@@ -224,7 +224,7 @@ class CNN(ModelArchitecture):
         hT = self.convSequential(x)
         return self.linSequential(hT.view(-1, hT.shape[1] * hT.shape[2] * hT.shape[3]))
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         convHidden = [None] * self.numConvLayers
         if self.bn:
@@ -263,7 +263,7 @@ class CNN_Flat(CNN):
         hT = self.convSequential(x)
         return self.linSequential(self.flat(hT.view(-1, hT.shape[1] * hT.shape[2] * hT.shape[3])))
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         convHidden = [None] * self.numConvLayers
         if self.bn:
@@ -380,16 +380,18 @@ class ResNet(ModelArchitecture):
         out = self.linear(out)
         return out
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hiddens = []
         # First block
         out = F.relu(self.bn1(self.conv1(x)))
         out = self.layer1(out)
-        hiddens.append(out.view(out.size(0), -1))
+        if not only_last:
+            hiddens.append(out.view(out.size(0), -1))
 
         # Second block
         out = self.layer2(out)
-        hiddens.append(out.view(out.size(0), -1))
+        if not only_last:
+            hiddens.append(out.view(out.size(0), -1))
 
         # Third block
         out = self.layer3(out)

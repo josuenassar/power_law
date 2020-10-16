@@ -170,7 +170,7 @@ class EigenvalueRegularization(Trainer):
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
-        hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
+        hidden, y_hat = self.bothOutputs(x.to(self.device), only_last=self.only_last)  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
         "Compute spectra regularizer"
