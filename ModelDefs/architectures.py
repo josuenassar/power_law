@@ -360,9 +360,6 @@ class ResNet(ModelArchitecture):
         )
         self.layer0 =  nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
                                     nn.BatchNorm2d(n_filters),nn.ReLU())
-
-        # self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
-        # self.bn1 = nn.BatchNorm2d(n_filters)
         self.layer1 = self._make_layer(block, n_filters, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)
@@ -382,10 +379,11 @@ class ResNet(ModelArchitecture):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
+        cp = self.checkpoint
+        out = cp(self.layer0, x)
+        out = cp(self.layer1, out)
+        out = cp(self.layer2, out)
+        out = cp(self.layer3, out)
         out = F.avg_pool2d(out, out.size()[3])
         out = out.view(out.size(0), -1)
         out = self.linear(out)
@@ -395,17 +393,17 @@ class ResNet(ModelArchitecture):
         cp = self.checkpoint
         hiddens = []
         # First block
-        out = cp(self.layer0(x))
+        out = cp(self.layer0, x)
         if not only_last:
             hiddens.append(out.view(out.size(0), -1))
 
         # Second block
-        out = cp(self.layer2(out))
+        out = cp(self.layer2,out)
         if not only_last:
             hiddens.append(out.view(out.size(0), -1))
 
         # Third block
-        out = cp(self.layer3(out))
+        out = cp(self.layer3, out)
         hiddens.append(out.view(out.size(0), -1))
 
         # Read out
