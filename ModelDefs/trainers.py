@@ -190,6 +190,7 @@ class EigenvalueRegularization(Trainer):
             self.train()
             if self.cuda:
                 torch.cuda.empty_cache()
+            self.to(self.device)
         return eigVec
 
     def spectra_regularizer(self, hidden):
