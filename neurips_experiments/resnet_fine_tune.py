@@ -59,7 +59,7 @@ def run(filters=[4, 8, 16], checkpoint=True):
                   'slope': [1.00],
                   'eig_start': 10,
                   'n_filters': n_filters,
-                  'checkpoint': checkpoint}
+                  'cp': checkpoint}
 
         pretrained_models = torch.load('resnet_' + str(n_filters), map_location=torch.device(device))
         model_params = []
