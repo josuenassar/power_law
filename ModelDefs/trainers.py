@@ -186,7 +186,7 @@ class EigenvalueRegularization(Trainer):
             self.to(desp)
             hidden, _ = self.bothOutputs(x.to(desp), only_last=self.only_last)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
-            self.eig_vec = eigVec.to(self.device)
+            self.eig_vec = eigVec
             self.train()
             if self.cuda:
                 torch.cuda.empty_cache()
