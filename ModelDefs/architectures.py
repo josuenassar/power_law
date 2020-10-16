@@ -358,7 +358,7 @@ class ResNet(ModelArchitecture):
                 nn.Conv2d(20,64,5),
                 nn.ReLU()
         )
-        self.layer0 =  nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
+        self.layer0 = nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
                                     nn.BatchNorm2d(n_filters),nn.ReLU())
 
         # self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
@@ -382,7 +382,8 @@ class ResNet(ModelArchitecture):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
+        # out = F.relu(self.bn1(self.conv1(x)))
+        out = self.layer0
         out = self.layer1(out)
         out = self.layer2(out)
         out = self.layer3(out)
@@ -395,17 +396,20 @@ class ResNet(ModelArchitecture):
         cp = self.checkpoint
         hiddens = []
         # First block
-        out = cp(self.layer0(x))
+        # first_block = lambda x: self.layer1(self.layer0(x))
+        out = cp(self.layer0, x)
+        out = cp(self.layer1, out)
+        # out = cp(first_block, x)
         if not only_last:
             hiddens.append(out.view(out.size(0), -1))
 
         # Second block
-        out = cp(self.layer2(out))
+        out = cp(self.layer2, out)
         if not only_last:
             hiddens.append(out.view(out.size(0), -1))
 
         # Third block
-        out = cp(self.layer3(out))
+        out = cp(self.layer3, out)
         hiddens.append(out.view(out.size(0), -1))
 
         # Read out
