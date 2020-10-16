@@ -7,6 +7,7 @@ from ModelDefs.models import ModelFactory
 from DataDefs.data import get_data
 import torch
 import os
+import copy
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 """
@@ -59,7 +60,8 @@ def run(filters=[4, 8, 16], checkpoint=True):
                   'slope': [1.00],
                   'eig_start': 10,
                   'n_filters': n_filters,
-                  'cp': checkpoint}
+                  'cp': checkpoint,
+                  'nchunks': 2}
 
         pretrained_models = torch.load('resnet_' + str(n_filters), map_location=torch.device(device))
         model_params = []
@@ -93,7 +95,7 @@ def run(filters=[4, 8, 16], checkpoint=True):
                 print((1 - mce) * 100)
 
             "Save model parameters"
-            model_params.append((kwargs, model.state_dict()))
+            model_params.append((kwargs, copy.deepcopy(model.state_dict())))
             if cuda:
                 torch.cuda.empty_cache()
             del model
