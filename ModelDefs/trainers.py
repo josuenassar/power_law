@@ -184,7 +184,7 @@ class EigenvalueRegularization(Trainer):
                 "Delete old eigen vectors to free up space"
                 torch.cuda.empty_cache()
             self.to(desp)
-            hidden, _ = self.bothOutputs(x.to(desp))
+            hidden, _ = self.bothOutputs(x.to(desp), only_last=self.only_last)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
             self.eig_vec = eigVec.to(self.device)
             self.train()
@@ -222,7 +222,7 @@ class EigenvalueRegularization(Trainer):
         elif X_full is None and self.eig_loader is not None:
             X_full, _ = next(iter(self.eig_loader))
         if desp is None:
-            desp = self.device().type
+            desp = self.device
         self.compute_eig_vectors(X_full.to(self.device), desp=desp)
         X_full.to('cpu', non_blocking=True)
         torch.cuda.empty_cache()
