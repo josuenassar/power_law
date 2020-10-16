@@ -391,8 +391,9 @@ class ResNet(ModelArchitecture):
         cp = self.checkpoint
         hiddens = []
         if only_last:
-            vibes = lambda x: self.layer3(self.layer2(self.layer1(self.layer0(x))))
-            out = cp(vibes, x)
+            # vibes = lambda x: self.layer3(self.layer2(self.layer1(self.layer0(x))))
+            # out = cp(vibes, x)
+            out = self.layer3(self.layer2(self.layer1(self.layer0(x))))
             hiddens.append(out.view(out.size(0), -1))
         else:
             # First block
