@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn.functional as F
 import torch.nn.init as init
+from torch.utils.checkpoint import checkpoint_sequential
 # Architectures
 
 # TODO: Fix batch norm issue
@@ -348,18 +349,28 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(ModelArchitecture):
-    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4):
+    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4, checkpoint=True, nchunks=1):
         super(ResNet, self).__init__(cuda=cuda)
         self.in_planes = n_filters
+        model = nn.Sequential(
+                nn.Conv2d(1,20,5),
+                nn.ReLU(),
+                nn.Conv2d(20,64,5),
+                nn.ReLU()
+        )
+        self.layer0 =  nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
+                                    nn.BatchNorm2d(n_filters),nn.ReLU())
 
-        self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
-        self.bn1 = nn.BatchNorm2d(n_filters)
+        # self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        # self.bn1 = nn.BatchNorm2d(n_filters)
         self.layer1 = self._make_layer(block, n_filters, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)
         self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
 
         self.apply(_weights_init)
+        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if checkpoint \
+            else lambda f, inpt, **kv: f(inpt, **kv)
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -371,28 +382,29 @@ class ResNet(ModelArchitecture):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
+        cp = self.checkpoint
+        out = cp(self.layer0(x))
+        out = cp(self.layer1(out))
+        out = cp(self.layer2(out))
+        out = cp(self.layer3(out))
         out = F.avg_pool2d(out, out.size()[3])
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return out
 
     def bothOutputs(self, x):
+        cp = self.checkpoint
         hiddens = []
         # First block
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
+        out = cp(self.layer0(x))
         hiddens.append(out.view(out.size(0), -1))
 
         # Second block
-        out = self.layer2(out)
+        out = cp(self.layer2(out))
         hiddens.append(out.view(out.size(0), -1))
 
         # Third block
-        out = self.layer3(out)
+        out = cp(self.layer3(out))
         hiddens.append(out.view(out.size(0), -1))
 
         # Read out
