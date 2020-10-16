@@ -388,13 +388,13 @@ class ResNet(ModelArchitecture):
         return out
 
     def bothOutputs(self, x, only_last=False):
+        cp = self.checkpoint
         hiddens = []
         if only_last:
-            out = self.layer3(self.layer2(self.layer1(self.layer0(x))))
+            vibes = lambda x: self.layer3(self.layer2(self.layer1(self.layer0(x))))
+            out = cp(vibes, x)
             hiddens.append(out.view(out.size(0), -1))
         else:
-            cp = self.checkpoint
-
             # First block
             out = cp(self.layer0, x)
             out = cp(self.layer1, out)
@@ -416,5 +416,5 @@ class ResNet(ModelArchitecture):
         return hiddens, out
 
 
-def resnet20(cuda=False, n_filters=4, cp=True):
-    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters, cp=cp)
+def resnet20(cuda=False, n_filters=4, cp=True, nchunks=1):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters, cp=cp, nchunks=nchunks)
