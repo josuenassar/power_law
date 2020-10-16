@@ -20,7 +20,7 @@ dataset = 'CIFAR10Augmented'
 no_seeds = 3
 seeds = [100, 200, 300]
 cuda = False
-filters = [4, 8, 16]
+filters = [16, 8, 4]
 device = 'cpu'
 if torch.cuda.is_available():
     cuda = True
