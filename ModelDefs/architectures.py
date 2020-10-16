@@ -360,6 +360,9 @@ class ResNet(ModelArchitecture):
         )
         self.layer0 =  nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
                                     nn.BatchNorm2d(n_filters),nn.ReLU())
+
+        # self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
+        # self.bn1 = nn.BatchNorm2d(n_filters)
         self.layer1 = self._make_layer(block, n_filters, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)

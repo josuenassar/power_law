@@ -77,3 +77,6 @@ MNIST/**
 *.xml
 .idea/power_law.iml
 *.pyc
+.DS_store
+*/DataDefs/*/
+notes.code-workspace
