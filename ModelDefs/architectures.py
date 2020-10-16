@@ -359,7 +359,7 @@ class ResNet(ModelArchitecture):
         self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)
         self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
-
+        self.numHiddenLayers = 3
         self.apply(_weights_init)
         self.cp = cp
         if self.cp:
@@ -387,13 +387,16 @@ class ResNet(ModelArchitecture):
         out = self.linear(out)
         return out
 
-    def bothOutputs(self, x, only_last=False):
+    def bothOutputs(self, y, only_last=False):
         cp = self.checkpoint
         hiddens = []
+        if self.cp:
+            x = torch.autograd.Variable(y.data, requires_grad=True)
+        else:
+            x = y
+
         if only_last:
-            # vibes = lambda x: self.layer3(self.layer2(self.layer1(self.layer0(x))))
-            # out = cp(vibes, x)
-            out = self.layer3(self.layer2(self.layer1(self.layer0(x))))
+            out = cp(torch.nn.Sequential(*[self.layer0, self.layer1, self.layer2, self.layer3]), x)
             hiddens.append(out.view(out.size(0), -1))
         else:
             # First block
