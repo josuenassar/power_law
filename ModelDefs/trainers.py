@@ -170,7 +170,7 @@ class EigenvalueRegularization(Trainer):
 
     "Overwrites method in trainer"
     def evaluate_training_loss(self, x, y):
-        hidden, y_hat = self.bothOutputs(x.to(self.device))  # feed data forward
+        hidden, y_hat = self.bothOutputs(x.to(self.device), only_last=self.only_last)  # feed data forward
         loss = self.loss(y_hat, y.to(self.device))  # compute loss
 
         "Compute spectra regularizer"
@@ -179,6 +179,10 @@ class EigenvalueRegularization(Trainer):
     def compute_eig_vectors(self, x):
         with torch.no_grad():
             self.eval()
+            self.eig_vec = None
+            if self.cuda:
+                "Delete old eigen vectors to free up space"
+                torch.cuda.empty_cache()
             hidden, _ = self.bothOutputs(x)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
         self.eig_vec = eigVec
