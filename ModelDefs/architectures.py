@@ -397,6 +397,7 @@ class ResNet(ModelArchitecture):
         hiddens = []
         # First block
         out = cp(self.layer0, x)
+        out = cp(self.layer1, out)
         if not only_last:
             hiddens.append(out.view(out.size(0), -1))
 
