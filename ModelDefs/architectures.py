@@ -411,5 +411,5 @@ class ResNet(ModelArchitecture):
         return hiddens, out
 
 
-def resnet20(cuda=False, n_filters=4, checkpoint=True):
-    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters, checkpoint=checkpoint)
+def resnet20(cuda=False, n_filters=4, cp=True):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters, cp=cp)
