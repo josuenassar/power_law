@@ -179,6 +179,10 @@ class EigenvalueRegularization(Trainer):
     def compute_eig_vectors(self, x):
         with torch.no_grad():
             self.eval()
+            self.eig_vec = None
+            if self.cuda:
+                "Delete old eigen vectors to free up space"
+                torch.cuda.empty_cache()
             hidden, _ = self.bothOutputs(x)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
         self.eig_vec = eigVec
