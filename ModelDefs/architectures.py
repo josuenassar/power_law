@@ -361,7 +361,8 @@ class ResNet(ModelArchitecture):
         self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
 
         self.apply(_weights_init)
-        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if checkpoint \
+        self.checkpoint = checkpoint
+        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if self.checkpoint \
             else lambda f, inpt, **kv: f(inpt, **kv)
 
     def _make_layer(self, block, planes, num_blocks, stride):
@@ -400,6 +401,7 @@ class ResNet(ModelArchitecture):
 
         # Third block
         out = cp(self.layer3, out)
+        # out = self.layer3(out)
         hiddens.append(out.view(out.size(0), -1))
 
         # Read out
