@@ -349,7 +349,7 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(ModelArchitecture):
-    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4, checkpoint=True, nchunks=1):
+    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4, cp=True, nchunks=1):
         super(ResNet, self).__init__(cuda=cuda)
         self.in_planes = n_filters
         self.layer0 = nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
@@ -361,8 +361,8 @@ class ResNet(ModelArchitecture):
         self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
 
         self.apply(_weights_init)
-        self.checkpoint = checkpoint
-        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if self.checkpoint \
+        self.cp = cp
+        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if self.cp \
             else lambda f, inpt, **kv: f(inpt, **kv)
 
     def _make_layer(self, block, planes, num_blocks, stride):
