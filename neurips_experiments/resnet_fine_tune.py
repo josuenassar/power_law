@@ -1,4 +1,5 @@
 from tqdm import tqdm
+import numpy as np
 import sys
 import fire
 sys.path.append('..')
@@ -22,7 +23,15 @@ def run(filters=[4, 8, 16]):
     no_seeds = 3
     seeds = [1000, 2000, 3000]
     cuda = False
-    batch_sizes = [1_500, 3_000, 6_000]
+
+    batch_sizes = []
+    for element in filters:
+        if element == 4:
+            batch_sizes.append(1_500)
+        elif element == 8:
+            batch_sizes.append(3_000)
+        elif element == 16:
+            batch_sizes.append(6_000)
     device = 'cpu'
     if torch.cuda.is_available():
         cuda = True
@@ -65,7 +74,8 @@ def run(filters=[4, 8, 16]):
             model.load_state_dict(pretrained_models[j][1])
             models.append(model)
 
-            num_epochs = int(3_000 / (50_000 / batch_size))
+            grad_per_epoch = np.ceil(50_000 / batch_size)
+            num_epochs = int(np.ceil(num_grad_steps / grad_per_epoch))
             print(num_epochs)
             for _ in tqdm(range(num_epochs)):
                 models[j].train()
