@@ -6,7 +6,6 @@ from ModelDefs.models import ModelFactory
 from DataDefs.data import get_data
 import torch
 import os
-
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 """
@@ -14,20 +13,21 @@ Fine-tune a pre-trained a resnet where the spectral regularizer is put on the la
 The width of the last hidden layer is [1000ish, 2000ish, 4000ish] so the batch sizes we will use is 
 [1500, 3000, 6000]
 """
+
+
 def run(filters=[4, 8, 16]):
     # In[]
     weight_decay = .0001
-    num_epochs = 200
     dataset = 'CIFAR10Augmented'
     no_seeds = 3
     seeds = [1000, 2000, 3000]
     cuda = False
-    # filters = [4, 8, 16]
     batch_sizes = [1_500, 3_000, 6_000]
     device = 'cpu'
     if torch.cuda.is_available():
         cuda = True
         device = 'cuda'
+    num_grad_steps = 3_000
     # In[]
     for n_filters, batch_size in zip(filters, batch_sizes):
         kwargs = {"dims": [],
@@ -60,11 +60,13 @@ def run(filters=[4, 8, 16]):
             X_full, _ = next(iter(full_loader))
             X_test, Y_test = next(iter(test_loader))
 
-
             torch.manual_seed(seeds[j] + 1)
             model = ModelFactory(**kwargs)
             model.load_state_dict(pretrained_models[j][1])
             models.append(model)
+
+            num_epochs = int(3_000 / (50_000 / batch_size))
+            print(num_epochs)
             for _ in tqdm(range(num_epochs)):
                 models[j].train()
                 models[j].train_epoch(train_loader, X_full)
