@@ -7,6 +7,7 @@ from ModelDefs.models import ModelFactory
 from DataDefs.data import get_data
 import torch
 import os
+import copy
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 """
@@ -16,13 +17,11 @@ The width of the last hidden layer is [1000ish, 2000ish, 4000ish] so the batch s
 """
 
 
-def run(filters=[4, 8, 16]):
+def run(filters=[4, 8, 16], checkpoint=True):
     # In[]
     weight_decay = .0001
     dataset = 'CIFAR10Augmented'
-    no_seeds = 3
     seeds = [1000, 2000, 3000]
-    cuda = False
 
     batch_sizes = []
     for element in filters:
@@ -33,6 +32,7 @@ def run(filters=[4, 8, 16]):
         elif element == 16:
             batch_sizes.append(6_000)
     device = 'cpu'
+    cuda = False
     if torch.cuda.is_available():
         cuda = True
         device = 'cuda'
@@ -57,12 +57,14 @@ def run(filters=[4, 8, 16]):
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
-                  'slope': [1.00],
+                  'slope': 1.00,
                   'eig_start': 10,
-                  'n_filters': n_filters}
+                  'n_filters': n_filters,
+                  'cp': checkpoint,
+                  'nchunks': 2}
 
-        pretrained_models = torch.load('resnet_' + str(n_filters))
-        models = []
+        pretrained_models = torch.load('resnet_' + str(n_filters), map_location=torch.device(device))
+        model_params = []
         for j in range(len(seeds)):
             train_loader, test_loader, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=seeds[j],
                                                               validate=False, data_dir='data/')
@@ -71,27 +73,35 @@ def run(filters=[4, 8, 16]):
 
             torch.manual_seed(seeds[j] + 1)
             model = ModelFactory(**kwargs)
-            model.load_state_dict(pretrained_models[j][1])
-            models.append(model)
+            state_dict = pretrained_models[j][1]
+#            state_dict['cp'] = checkpoint
+            model.load_state_dict(state_dict)
+            print(model.cp)
 
             grad_per_epoch = np.ceil(50_000 / batch_size)
             num_epochs = int(np.ceil(num_grad_steps / grad_per_epoch))
             print(num_epochs)
+            "Train"
             for _ in tqdm(range(num_epochs)):
-                models[j].train()
-                models[j].train_epoch(train_loader, X_full)
+                model.train()
+                if n_filters == 16:
+                    model.train_epoch(train_loader, X_full, desp='cpu')
+                else:
+                    model.train_epoch(train_loader, X_full)
 
+            "Print test accuracy"
             with torch.no_grad():
-                models[j].eval()
-                y_hat = models[j](X_test.to(device))
+                model.eval()
+                y_hat = model(X_test.to(device))
                 _, predicted = torch.max(y_hat.to(device), 1)
                 mce = (predicted != Y_test.to(device).data).float().mean().item()
                 print((1 - mce) * 100)
+
+            "Save model parameters"
+            model_params.append((kwargs, copy.deepcopy(model.state_dict())))
             if cuda:
                 torch.cuda.empty_cache()
-        model_params = []
-        for idx in range(len(models)):
-            model_params.append((kwargs, models[idx].state_dict()))
+            del model
 
         torch.save(model_params, 'resnet_fine_tune_' + str(n_filters))
         del pretrained_models

@@ -176,17 +176,21 @@ class EigenvalueRegularization(Trainer):
         "Compute spectra regularizer"
         return loss + self.alpha_spectra * self.spectra_regularizer(hidden)
 
-    def compute_eig_vectors(self, x):
+    def compute_eig_vectors(self, x, desp='cpu'):
         with torch.no_grad():
             self.eval()
             self.eig_vec = None
             if self.cuda:
                 "Delete old eigen vectors to free up space"
                 torch.cuda.empty_cache()
-            hidden, _ = self.bothOutputs(x)
+            self.to(desp)
+            hidden, _ = self.bothOutputs(x.to(desp), only_last=self.only_last)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
-        self.eig_vec = eigVec
-        self.train()
+            self.eig_vec = eigVec
+            self.train()
+            if self.cuda:
+                torch.cuda.empty_cache()
+            self.to(self.device)
         return eigVec
 
     def spectra_regularizer(self, hidden):
@@ -214,13 +218,15 @@ class EigenvalueRegularization(Trainer):
                     warnings.warn("This is not OK!!!")
         return spectra_regul
 
-    def train_epoch(self, X: DataLoader, X_full=None):
+    def train_epoch(self, X: DataLoader, X_full=None, desp=None):
 
         if X_full is None and self.eig_loader is None:
             self.add_eig_loader(X)
         elif X_full is None and self.eig_loader is not None:
             X_full, _ = next(iter(self.eig_loader))
-        self.compute_eig_vectors(X_full.to(self.device))
+        if desp is None:
+            desp = self.device
+        self.compute_eig_vectors(X_full.to(self.device), desp=desp)
         X_full.to('cpu', non_blocking=True)
         torch.cuda.empty_cache()
         # for _, (x, y) in enumerate(tqdm(X, desc="Training Elements", ascii=True, position=1, leave=True)):

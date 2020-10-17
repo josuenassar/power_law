@@ -48,7 +48,8 @@ if __name__ == '__main__':
                   'training_type': 'FGSM',
                   'slope': [1.00],
                   'eig_start': 10,
-                  'n_filters': n_filters}
+                  'n_filters': n_filters,
+                  'cp': False}
 
         models = []
         for j in range(len(seeds)):
@@ -65,12 +66,11 @@ if __name__ == '__main__':
                 lr_scheduler.step()
 
             with torch.no_grad():
-                if epoch % 10 == 0:
-                    models[j].eval()
-                    y_hat = models[j](X_test.to(device))
-                    _, predicted = torch.max(y_hat.to(device), 1)
-                    mce = (predicted != Y_test.to(device).data).float().mean().item()
-                    print((1 - mce) * 100)
+                models[j].eval()
+                y_hat = models[j](X_test.to(device))
+                _, predicted = torch.max(y_hat.to(device), 1)
+                mce = (predicted != Y_test.to(device).data).float().mean().item()
+                print((1 - mce) * 100)
 
         model_params = []
         for idx in range(len(models)):

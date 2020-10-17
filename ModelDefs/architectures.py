@@ -349,28 +349,23 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(ModelArchitecture):
-    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4, checkpoint=True, nchunks=1):
+    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4, cp=True, nchunks=1):
         super(ResNet, self).__init__(cuda=cuda)
         self.in_planes = n_filters
-        model = nn.Sequential(
-                nn.Conv2d(1,20,5),
-                nn.ReLU(),
-                nn.Conv2d(20,64,5),
-                nn.ReLU()
-        )
-        self.layer0 =  nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
+        self.layer0 = nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
                                     nn.BatchNorm2d(n_filters),nn.ReLU())
 
-        # self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
-        # self.bn1 = nn.BatchNorm2d(n_filters)
         self.layer1 = self._make_layer(block, n_filters, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)
         self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
-
+        self.numHiddenLayers = 3
         self.apply(_weights_init)
-        self.checkpoint = lambda f,inpt, **kv, : checkpoint_sequential(f,nchunks, inpt, **kv) if checkpoint \
-            else lambda f, inpt, **kv: f(inpt, **kv)
+        self.cp = cp
+        if self.cp:
+            self.checkpoint = lambda f, inpt, **kv: checkpoint_sequential(f, nchunks, inpt, **kv)
+        else:
+            self.checkpoint = lambda f, inpt, **kv: f(inpt, **kv)
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -392,22 +387,31 @@ class ResNet(ModelArchitecture):
         out = self.linear(out)
         return out
 
-    def bothOutputs(self, x, only_last=False):
+    def bothOutputs(self, y, only_last=False):
         cp = self.checkpoint
         hiddens = []
-        # First block
-        out = cp(self.layer0, x)
-        if not only_last:
+        if self.cp:
+            x = torch.autograd.Variable(y.data, requires_grad=True)
+        else:
+            x = y
+
+        if only_last:
+            out = cp(torch.nn.Sequential(*[self.layer0, self.layer1, self.layer2, self.layer3]), x)
+            hiddens.append(out.view(out.size(0), -1))
+        else:
+            # First block
+            out = cp(self.layer0, x)
+            out = cp(self.layer1, out)
             hiddens.append(out.view(out.size(0), -1))
 
-        # Second block
-        out = cp(self.layer2,out)
-        if not only_last:
+            # Second block
+            out = cp(self.layer2, out)
             hiddens.append(out.view(out.size(0), -1))
 
-        # Third block
-        out = cp(self.layer3, out)
-        hiddens.append(out.view(out.size(0), -1))
+            # Third block
+            out = cp(self.layer3, out)
+            # out = self.layer3(out)
+            hiddens.append(out.view(out.size(0), -1))
 
         # Read out
         out = F.avg_pool2d(out, out.size()[3])
@@ -416,5 +420,5 @@ class ResNet(ModelArchitecture):
         return hiddens, out
 
 
-def resnet20(cuda=False, n_filters=4):
-    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters)
+def resnet20(cuda=False, n_filters=4, cp=True, nchunks=1):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters, cp=cp, nchunks=nchunks)

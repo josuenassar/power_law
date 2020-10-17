@@ -174,7 +174,7 @@ def compute_eig_vectors_only(hidden, only_last=False):
         cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
         cov = (cov + cov.transpose(1, 0)) / 2
         _, vecTemp = torch.symeig(cov, eigenvectors=True)
-        eigVec = vecTemp.float()
+        eigVec = vecTemp.float().cpu()
     else:
         eigVec = []
         for idx in range(len(hidden)):
