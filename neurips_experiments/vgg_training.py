@@ -46,7 +46,8 @@ if __name__ == '__main__':
               'training_type': 'FGSM',
               'slope': 1.00,
               'eig_start': 10,
-              'cp': False}
+              'cp': False,
+              'dropout': True}
 
     models = []
     for j in range(len(seeds)):

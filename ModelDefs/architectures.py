@@ -434,25 +434,27 @@ class VGG(ModelArchitecture):
     '''
     VGG model
     '''
-    def __init__(self, features, cuda=False):
+    def __init__(self, features, cuda=False, dropout=True):
         super(VGG, self).__init__(cuda=cuda)
         self.features = features
-        # self.classifier = nn.Sequential(
-        #     nn.Dropout(),
-        #     nn.Linear(512, 512),
-        #     nn.ReLU(True),
-        #     nn.Dropout(),
-        #     nn.Linear(512, 512),
-        #     nn.ReLU(True),
-        #     nn.Linear(512, 10),
-        # )
-        self.classifier = nn.Sequential(
-            nn.Linear(2048, 512),
-            nn.ReLU(True),
-            nn.Linear(512, 512),
-            nn.ReLU(True),
-            nn.Linear(512, 10),
-        )
+        if dropout:
+            self.classifier = nn.Sequential(
+                nn.Dropout(),
+                nn.Linear(512, 512),
+                nn.ReLU(True),
+                nn.Dropout(),
+                nn.Linear(512, 512),
+                nn.ReLU(True),
+                nn.Linear(512, 10),
+            )
+        else:
+            self.classifier = nn.Sequential(
+                nn.Linear(2048, 512),
+                nn.ReLU(True),
+                nn.Linear(512, 512),
+                nn.ReLU(True),
+                nn.Linear(512, 10),
+            )
         self.numHiddenLayers = 1
         # Initialize weights
         for m in self.modules():
@@ -500,6 +502,6 @@ cfg = {
 }
 
 
-def vgg11(cuda=False):
+def vgg11(cuda=False, dropout=False):
     """VGG 11-layer model (configuration "A")"""
-    return VGG(make_layers(cfg['A']), cuda=cuda)
+    return VGG(make_layers(cfg['A']), cuda=cuda, dropout=dropout)
