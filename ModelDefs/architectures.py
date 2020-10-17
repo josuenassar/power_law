@@ -377,7 +377,10 @@ class ResNet(ModelArchitecture):
         return nn.Sequential(*layers)
 
     def forward(self, x):
+        # import pdb; pdb.set_trace()
+        x.requires_grad_(True) if self.cp else None  # in place mutation to avoid copying
         cp = self.checkpoint
+
         out = cp(self.layer0, x)
         out = cp(self.layer1, out)
         out = cp(self.layer2, out)
@@ -387,13 +390,12 @@ class ResNet(ModelArchitecture):
         out = self.linear(out)
         return out
 
-    def bothOutputs(self, y, only_last=False):
-        cp = self.checkpoint
+    def bothOutputs(self, x, only_last=False):
         hiddens = []
-        if self.cp:
-            x = torch.autograd.Variable(y.data, requires_grad=True)
-        else:
-            x = y
+        # import pdb; pdb.set_trace()
+
+        x.requires_grad_(True) if self.cp else None  # in place mutation to avoid copying
+        cp = self.checkpoint
 
         if only_last:
             out = cp(torch.nn.Sequential(*[self.layer0, self.layer1, self.layer2, self.layer3]), x)
@@ -410,7 +412,6 @@ class ResNet(ModelArchitecture):
 
             # Third block
             out = cp(self.layer3, out)
-            # out = self.layer3(out)
             hiddens.append(out.view(out.size(0), -1))
 
         # Read out
