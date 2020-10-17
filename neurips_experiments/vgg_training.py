@@ -13,8 +13,7 @@ Train a VGG-11 w/ no dropout
 
 # In[]
 batch_size = 128
-# weight_decay = .0001
-weight_decay = 0
+weight_decay = .0001
 num_epochs = 350
 dataset = 'CIFAR10Augmented'
 no_seeds = 3
