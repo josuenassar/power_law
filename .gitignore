@@ -78,5 +78,8 @@ MNIST/**
 .idea/power_law.iml
 *.pyc
 .DS_store
-*/DataDefs/*/
+DataDefs/*/
+DataDefs/*.gz
+neurips_experiments/data/*
+neurips_experiments/experiment_eig_convergence/*
 notes.code-workspace

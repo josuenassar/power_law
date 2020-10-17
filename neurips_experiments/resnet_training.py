@@ -32,7 +32,7 @@ if __name__ == '__main__':
                   "activation": 'relu',
                   "architecture": 'resnet',
                   "trainer": "vanilla",
-                  "regularizer": "no",
+                  "regularizer": "eig",
                   'alpha_jacob': 1e-4,
                   'bn': False,
                   'alpha_spectra': 1,
@@ -49,7 +49,7 @@ if __name__ == '__main__':
                   'slope': 1.00,
                   'eig_start': 10,
                   'n_filters': n_filters,
-                  'cp': False}
+                  'cp': True}
 
         models = []
         for j in range(len(seeds)):
