@@ -73,13 +73,12 @@ def run(filters=[4, 8, 16], checkpoint=True):
 
             torch.manual_seed(seeds[j] + 1)
             model = ModelFactory(**kwargs)
-            # state_dict = pretrained_models[j][1]
-            # state_dict['checkpoint'] = checkpoint
-            # model.load_state_dict(state_dict)
+            state_dict = pretrained_models[j][1]
+            state_dict['cp'] = checkpoint
+            model.load_state_dict(state_dict)
 
             grad_per_epoch = np.ceil(50_000 / batch_size)
             num_epochs = int(np.ceil(num_grad_steps / grad_per_epoch))
-            num_epochs = 5
             print(num_epochs)
             "Train"
             for _ in tqdm(range(num_epochs)):
