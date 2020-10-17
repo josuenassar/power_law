@@ -46,7 +46,7 @@ if __name__ == '__main__':
                   'noRestarts': 1,
                   'lr_pgd': 1e-2,
                   'training_type': 'FGSM',
-                  'slope': [1.00],
+                  'slope': 1.00,
                   'eig_start': 10,
                   'n_filters': n_filters,
                   'cp': False}
