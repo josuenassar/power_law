@@ -84,10 +84,10 @@ def run(filters=[4, 8, 16], checkpoint=True):
             "Train"
             for _ in tqdm(range(num_epochs)):
                 model.train()
-                # if n_filters == 16:
-                #     model.train_epoch(train_loader, X_full, desp='cpu')
-                # else:
-                model.train_epoch(train_loader, X_full)
+                if n_filters == 16:
+                    model.train_epoch(train_loader, X_full, desp='cpu')
+                else:
+                    model.train_epoch(train_loader, X_full)
 
             "Print test accuracy"
             with torch.no_grad():
