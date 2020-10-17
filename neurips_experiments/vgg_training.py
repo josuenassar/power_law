@@ -33,7 +33,7 @@ if __name__ == '__main__':
               'alpha_jacob': 1e-4,
               'bn': False,
               'alpha_spectra': 1,
-              'lr': 0.1,
+              'lr': 0.01,
               'optimizer': 'sgd',
               'weight_decay': weight_decay,
               'cuda': cuda,
