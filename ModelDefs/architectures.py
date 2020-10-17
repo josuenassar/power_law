@@ -440,7 +440,7 @@ class VGG(ModelArchitecture):
         if dropout:
             self.classifier = nn.Sequential(
                 nn.Dropout(),
-                nn.Linear(512, 512),
+                nn.Linear(2048, 512),
                 nn.ReLU(True),
                 nn.Dropout(),
                 nn.Linear(512, 512),
