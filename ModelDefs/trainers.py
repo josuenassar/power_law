@@ -184,7 +184,9 @@ class EigenvalueRegularization(Trainer):
                 "Delete old eigen vectors to free up space"
                 torch.cuda.empty_cache()
             self.to(desp)
+            print('before')
             hidden, _ = self.bothOutputs(x.to(desp), only_last=self.only_last)
+            print('after')
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
             self.eig_vec = eigVec
             self.train()
