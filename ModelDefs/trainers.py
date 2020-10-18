@@ -185,19 +185,18 @@ class EigenvalueRegularization(Trainer):
                 torch.cuda.empty_cache()
 
             if desp:
-                temp_hiddens = None
+                hidden = None
                 bs = 1_024
                 N = int(np.ceil(x.shape[0] / bs))
                 for idx in range(N):
-                    hidden, _ = self.bothOutputs(x[idx * bs: (idx + 1) * bs, :].to(self.device),
-                                                 only_last=self.only_last)
-                    if temp_hiddens is None:
-                        temp_hiddens = [hidden[n].clone().to('cpu') for n in range(len(hidden))]
+                    temp, _ = self.bothOutputs(x[idx * bs: (idx + 1) * bs, :].to(self.device),
+                                               only_last=self.only_last)
+                    if hidden is None:
+                        hidden = [temp[n].clone().to('cpu') for n in range(len(hidden))]
                     else:
-                        temp_hiddens = [torch.cat((temp_hiddens[n],
-                                                   hidden[n].clone().to('cpu')), 0) for n in range(len(hidden))]
-                    del hidden
-
+                        hidden = [torch.cat((hidden[n], temp[n].clone().to('cpu')),
+                                            0) for n in range(len(hidden))]
+                    del temp
             else:
                 hidden, _ = self.bothOutputs(x.to(self.device), only_last=self.only_last)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
