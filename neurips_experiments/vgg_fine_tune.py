@@ -33,7 +33,7 @@ num_grad_steps = 3_000
 # In[]
 kwargs = {"dims": [],
           "activation": 'relu',
-          "architecture": 'vgg9',
+          "architecture": 'vgg11',
           "trainer": "vanilla",
           "regularizer": "eig",
           'alpha_jacob': 1e-4,
