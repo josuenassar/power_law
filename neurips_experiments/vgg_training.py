@@ -14,7 +14,7 @@ Train a VGG-11 w/ no dropout
 # In[]
 batch_size = 128
 weight_decay = .0001
-num_epochs = 350
+num_epochs = 150
 dataset = 'CIFAR10Augmented'
 no_seeds = 3
 seeds = [100, 200, 300]
@@ -27,7 +27,7 @@ if torch.cuda.is_available():
 if __name__ == '__main__':
     kwargs = {"dims": [],
               "activation": 'relu',
-              "architecture": 'vgg',
+              "architecture": 'vgg11',
               "trainer": "vanilla",
               "regularizer": "no",
               'alpha_jacob': 1e-4,
@@ -46,7 +46,7 @@ if __name__ == '__main__':
               'slope': 1.00,
               'eig_start': 10,
               'cp': False,
-              'dropout': True}
+              'dropout': False}
 
     models = []
     for j in range(len(seeds)):
@@ -55,7 +55,7 @@ if __name__ == '__main__':
         X_test, Y_test = next(iter(test_loader))
         torch.manual_seed(seeds[j] + 1)
         models.append(ModelFactory(**kwargs))
-        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(models[j].optimizer, milestones=[150, 250])
+        lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(models[j].optimizer, milestones=[50, 100])
         counter = 0
         for epoch in tqdm(range(num_epochs)):
             models[j].train()
