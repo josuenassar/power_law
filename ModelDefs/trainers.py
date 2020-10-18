@@ -176,23 +176,36 @@ class EigenvalueRegularization(Trainer):
         "Compute spectra regularizer"
         return loss + self.alpha_spectra * self.spectra_regularizer(hidden)
 
-    def compute_eig_vectors(self, x, desp='cpu'):
+    def compute_eig_vectors(self, x, desp=True):
         with torch.no_grad():
             self.eval()
+            "Delete old eigen vectors to free up space"
             self.eig_vec = None
             if self.cuda:
-                "Delete old eigen vectors to free up space"
                 torch.cuda.empty_cache()
-            self.to(desp)
-            print('before')
-            hidden, _ = self.bothOutputs(x.to(desp), only_last=self.only_last)
-            print('after')
+
+            if desp:
+                temp_hiddens = None
+                bs = 1_024
+                N = int(np.ceil(x.shape[0] / bs))
+                for idx in range(N):
+                    hidden, _ = self.bothOutputs(x[idx * bs: (idx + 1) * bs, :].to(self.device),
+                                                 only_last=self.only_last)
+                    if temp_hiddens is None:
+                        temp_hiddens = [hidden[n].clone().to('cpu') for n in range(len(hidden))]
+                    else:
+                        temp_hiddens = [torch.cat((temp_hiddens[n],
+                                                   hidden[n].clone().to('cpu')), 0) for n in range(len(hidden))]
+                    del hidden
+
+            else:
+                hidden, _ = self.bothOutputs(x.to(self.device), only_last=self.only_last)
             eigVec = compute_eig_vectors_only(hidden, self.only_last)
             self.eig_vec = eigVec
             self.train()
             if self.cuda:
                 torch.cuda.empty_cache()
-            self.to(self.device)
+            # self.to(self.device)
         return eigVec
 
     def spectra_regularizer(self, hidden):
@@ -220,7 +233,7 @@ class EigenvalueRegularization(Trainer):
                     warnings.warn("This is not OK!!!")
         return spectra_regul
 
-    def train_epoch(self, X: DataLoader, X_full=None, desp=None):
+    def train_epoch(self, X: DataLoader, X_full=None, desp=False):
         # import pdb; pdb.set_trace()
         if X_full is None and self.eig_loader is None:
             self.add_eig_loader(X)
