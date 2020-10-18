@@ -73,7 +73,7 @@ for j in range(len(seeds)):
     "Train"
     for _ in tqdm(range(num_epochs)):
         model.train()
-        model.train_epoch(train_loader, X_full)
+        model.train_epoch(train_loader, X_full, desp=True)
 
     "Print test accuracy"
     with torch.no_grad():
@@ -90,7 +90,7 @@ for j in range(len(seeds)):
     del model
 
 torch.save(model_params, 'vgg_fine_tune')
-del pretrained_models
+# del pretrained_models
 
 
 
