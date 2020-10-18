@@ -192,7 +192,7 @@ class EigenvalueRegularization(Trainer):
                     temp, _ = self.bothOutputs(x[idx * bs: (idx + 1) * bs, :].to(self.device),
                                                only_last=self.only_last)
                     if hidden is None:
-                        hidden = [temp[n].clone().to('cpu') for n in range(len(hidden))]
+                        hidden = [temp[n].clone().to('cpu') for n in range(len(temp))]
                     else:
                         hidden = [torch.cat((hidden[n], temp[n].clone().to('cpu')),
                                             0) for n in range(len(hidden))]
