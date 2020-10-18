@@ -15,7 +15,7 @@ Train a VGG-11 w/ no dropout
 batch_size = 128
 weight_decay = .0001
 num_epochs = 150
-dataset = 'CIFAR10Augmented'
+dataset = 'CIFAR10'
 no_seeds = 3
 seeds = [100, 200, 300]
 cuda = False
@@ -74,4 +74,4 @@ if __name__ == '__main__':
     for idx in range(len(models)):
         model_params.append((kwargs, models[idx].state_dict()))
 
-    torch.save(model_params, 'vgg11')
+    torch.save(model_params, 'vgg11_no_aug')

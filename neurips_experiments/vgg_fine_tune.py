@@ -19,7 +19,7 @@ The width of the last hidden layer is [1000ish, 2000ish, 4000ish] so the batch s
 
 # In[]
 weight_decay = .0001
-dataset = 'CIFAR10Augmented'
+dataset = 'CIFAR10'
 seeds = [1000, 2000, 3000]
 
 batch_sizes = []
@@ -29,7 +29,7 @@ cuda = False
 if torch.cuda.is_available():
     cuda = True
     device = 'cuda'
-num_grad_steps = 12_000
+num_grad_steps = 9_000
 # In[]
 kwargs = {"dims": [],
           "activation": 'relu',
@@ -54,7 +54,7 @@ kwargs = {"dims": [],
           'cp': False,
           'dropout': False}
 
-pretrained_models = torch.load('vgg11', map_location=torch.device(device))
+pretrained_models = torch.load('vgg11_no_aug', map_location=torch.device(device))
 model_params = []
 for j in range(len(seeds)):
     train_loader, test_loader, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=seeds[j],
@@ -89,7 +89,7 @@ for j in range(len(seeds)):
         torch.cuda.empty_cache()
     del model
 
-torch.save(model_params, 'vgg11_fine_tune')
+torch.save(model_params, 'vgg11_no_aug_fine_tune')
 # del pretrained_models
 
 
