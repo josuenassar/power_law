@@ -23,13 +23,13 @@ dataset = 'CIFAR10Augmented'
 seeds = [1000, 2000, 3000]
 
 batch_sizes = []
-batch_size = 1024
+batch_size = 4096
 device = 'cpu'
 cuda = False
 if torch.cuda.is_available():
     cuda = True
     device = 'cuda'
-num_grad_steps = 3_000
+num_grad_steps = 12_000
 # In[]
 kwargs = {"dims": [],
           "activation": 'relu',
@@ -52,7 +52,7 @@ kwargs = {"dims": [],
           'slope': 1.00,
           'eig_start': 10,
           'cp': False,
-          'dropout': True}
+          'dropout': False}
 
 pretrained_models = torch.load('vgg11', map_location=torch.device(device))
 model_params = []
