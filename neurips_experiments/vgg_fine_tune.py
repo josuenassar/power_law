@@ -54,7 +54,7 @@ kwargs = {"dims": [],
           'cp': False,
           'dropout': True}
 
-# pretrained_models = torch.load('vgg11', map_location=torch.device(device))
+pretrained_models = torch.load('vgg11', map_location=torch.device(device))
 model_params = []
 for j in range(len(seeds)):
     train_loader, test_loader, full_loader = get_data(dataset=dataset, batch_size=batch_size, _seed=seeds[j],
@@ -64,8 +64,8 @@ for j in range(len(seeds)):
 
     torch.manual_seed(seeds[j] + 1)
     model = ModelFactory(**kwargs)
-    # state_dict = pretrained_models[j][1]
-    # model.load_state_dict(state_dict)
+    state_dict = pretrained_models[j][1]
+    model.load_state_dict(state_dict)
 
     grad_per_epoch = np.ceil(50_000 / batch_size)
     num_epochs = int(np.ceil(num_grad_steps / grad_per_epoch))
@@ -89,7 +89,7 @@ for j in range(len(seeds)):
         torch.cuda.empty_cache()
     del model
 
-torch.save(model_params, 'vgg_fine_tune')
+torch.save(model_params, 'vgg11_fine_tune')
 # del pretrained_models
 
 
