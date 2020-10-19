@@ -53,7 +53,7 @@ class AdversarialTraining(BatchModifier):
         xs = []
         for r in range(self.noRestarts):
             if r == 0:
-                perturb = torch.zeros(x_nat.shape, device=x_nat.device)
+                perturb = 0
             else:
                 perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
             xT, ellT = self.pgd(x_nat, torch.clamp(x_nat + perturb, 0, 1), y)  # do pgd
