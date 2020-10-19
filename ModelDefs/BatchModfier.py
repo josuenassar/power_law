@@ -52,7 +52,10 @@ class AdversarialTraining(BatchModifier):
         losses = torch.zeros(self.noRestarts)
         xs = []
         for r in range(self.noRestarts):
-            perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
+            if r == 0:
+                perturb = torch.zeros(x_nat.shape, device=x_nat.device)
+            else:
+                perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
             xT, ellT = self.pgd(x_nat, torch.clamp(x_nat + perturb, 0, 1), y)  # do pgd
             xs.append(xT)
             losses[r] = ellT
@@ -86,13 +89,6 @@ class AdversarialTraining(BatchModifier):
         return x, ell.item()
 
     def FGSM(self, x_nat, y):
-        # perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-        # if x_nat.shape[1] == 1:
-        #     # if just one channel, then lb and ub are just numbers
-        #     x_nat = torch.clamp(x_nat + perturb, self.lb, self.ub)
-        # else:
-        #     # for more than one channel, need channel specific lb and ub
-        #     x_nat = self.clip(x_nat + perturb, self.lb, self.ub)
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
         x_nat = x_nat.detach()
         with torch.no_grad():
