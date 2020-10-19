@@ -83,8 +83,7 @@ class AdversarialTraining(BatchModifier):
                 else:
                     # for more than one channel, need channel specific lb and ub
                     xT = self.clip(xT, self.lb, self.ub)
-                x = xT.clone()
-                del xT
+                x = xT
         ell = self.loss(self._architecture(x), y)
         return x, ell.item()
 
