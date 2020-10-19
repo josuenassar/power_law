@@ -80,10 +80,10 @@ class AdversarialTraining(BatchModifier):
                 else:
                     # for more than one channel, need channel specific lb and ub
                     xT = self.clip(xT, self.lb, self.ub)
-                x = xT
+                x = xT.clone()
                 del xT
-            ell = self.loss(self._architecture(x), y)
-            return x, ell.item()
+        ell = self.loss(self._architecture(x), y)
+        return x, ell.item()
 
     def FGSM(self, x_nat, y):
         perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
