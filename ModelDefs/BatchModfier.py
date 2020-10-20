@@ -56,7 +56,12 @@ class AdversarialTraining(BatchModifier):
                 perturb = 0
             else:
                 perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-            xT, ellT = self.pgd(x_nat, torch.clamp(x_nat + perturb, 0, 1), y)  # do pgd
+
+            if x_nat.shape[1] == 1:
+                x_start = torch.clamp(x_nat + perturb, 0, 1)
+            else:
+                x_start = self.clip(x_nat + perturb, self.lb, self.ub)
+            xT, ellT = self.pgd(x_nat, x_start, y)  # do pgd
             xs.append(xT)
             losses[r] = ellT
         idx = torch.argmax(losses)
@@ -95,8 +100,11 @@ class AdversarialTraining(BatchModifier):
                 # if just one channel, then lb and ub are just numbers
                 x_nat = torch.clamp(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
             else:
+                x_nat = (x_nat + self.eps * torch.sign(jacobian)).detach()
+                for d in range(len(self.lb)):
+                    x_nat[:, d, :, :] = torch.clamp(x_nat[:, d, :, :], self.lb[d], self.ub[d])
                 # for more than one channel, need channel specific lb and ub
-                x_nat = self.clip(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
+                # x_nat = self.clip(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
             return x_nat, ell
 
     @staticmethod
