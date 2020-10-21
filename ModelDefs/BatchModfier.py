@@ -81,8 +81,8 @@ class AdversarialTraining(BatchModifier):
         """
         for i in range(self.gradSteps):
             jacobian, ell = self.get_jacobian(x, y)  # get jacobian
-            xT = (x + self.lr * torch.sign(jacobian)).detach()
             with torch.no_grad():
+                xT = (x + self.lr * torch.sign(jacobian)).detach()
                 xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
                 if x_nat.shape[1] == 1:
                     # if just one channel, then lb and ub are just numbers
