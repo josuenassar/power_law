@@ -107,7 +107,7 @@ class AdversarialTraining(BatchModifier):
             else:
                 for d in range(len(self.lb)):
                     x_nat[:, d, :, :] = torch.clamp(x_nat[:, d, :, :], self.lb[d], self.ub[d])
-            return x_nat, ell.item()
+            return x_nat, ell
 
     @staticmethod
     def clip(T, Tmin, Tmax):
