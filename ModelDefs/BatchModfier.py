@@ -52,15 +52,17 @@ class AdversarialTraining(BatchModifier):
         losses = torch.zeros(self.noRestarts)
         xs = []
         for r in range(self.noRestarts):
-            if r == 0:
-                perturb = 0
-            else:
-                perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-
-            if x_nat.shape[1] == 1:
-                x_start = torch.clamp(x_nat + perturb, 0, 1)
-            else:
-                x_start = self.clip(x_nat + perturb, self.lb, self.ub)
+            with torch.no_grad():
+                if r == 0:
+                    perturb = 0
+                else:
+                    perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
+                x_start = x_nat + perturb
+                if x_nat.shape[1] == 1:
+                    x_start = torch.clamp(x_start, self.lb, self.ub)
+                else:
+                    for d in range(len(self.lb)):
+                        x_start[:, d, :, :] = torch.clamp(x_start[:, d, :, :], self.lb[d], self.ub[d])
             xT, ellT = self.pgd(x_nat, x_start, y)  # do pgd
             xs.append(xT)
             losses[r] = ellT
@@ -87,25 +89,25 @@ class AdversarialTraining(BatchModifier):
                     xT = torch.clamp(xT, self.lb, self.ub)
                 else:
                     # for more than one channel, need channel specific lb and ub
-                    xT = self.clip(xT, self.lb, self.ub)
+                    for d in range(len(self.lb)):
+                        xT[:, d, :, :] = torch.clamp(xT[:, d, :, :], self.lb[d], self.ub[d])
                 x = xT
-        ell = self.loss(self._architecture(x), y)
+        with torch.no_grad():
+            ell = self.loss(self._architecture(x), y)
         return x, ell.item()
 
     def FGSM(self, x_nat, y):
         jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
         x_nat = x_nat.detach()
         with torch.no_grad():
+            x_nat = x_nat + self.eps * torch.sign(jacobian)
             if x_nat.shape[1] == 1:
                 # if just one channel, then lb and ub are just numbers
-                x_nat = torch.clamp(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
+                x_nat = torch.clamp(x_nat, self.lb, self.ub)
             else:
-                x_nat = (x_nat + self.eps * torch.sign(jacobian)).detach()
                 for d in range(len(self.lb)):
                     x_nat[:, d, :, :] = torch.clamp(x_nat[:, d, :, :], self.lb[d], self.ub[d])
-                # for more than one channel, need channel specific lb and ub
-                # x_nat = self.clip(x_nat + self.eps * torch.sign(jacobian), self.lb, self.ub).detach()
-            return x_nat, ell
+            return x_nat, ell.item()
 
     @staticmethod
     def clip(T, Tmin, Tmax):
