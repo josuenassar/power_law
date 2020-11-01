@@ -62,7 +62,7 @@ for n_filters in filters:
             models[j].train()
             models[j].train_epoch(train_loader)
             lr_scheduler.step()
-        
+
         with torch.no_grad():
             if epoch % 10 == 0:
                 models[j].eval()
