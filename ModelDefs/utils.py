@@ -167,14 +167,15 @@ def compute_eig_vectors(x, y, model, loss, device):
 
 
 def compute_eig_vectors_only(hidden, only_last=False):
-
+    # import pdb; pdb.set_trace()
     if only_last:
         hTemp = hidden[-1] - torch.mean(hidden[-1], 0)
         cov = hTemp.transpose(1, 0) @ hTemp / hTemp.shape[0]  # compute covariance matrix
         cov = cov.double()  # cast as 64bit to mitigate underflow in matrix factorization
         cov = (cov + cov.transpose(1, 0)) / 2
         _, vecTemp = torch.symeig(cov, eigenvectors=True)
-        eigVec = vecTemp.float()
+        eigVec = vecTemp.float().cpu()
+        # torch.pca_lowrank(hTemp)
     else:
         eigVec = []
         for idx in range(len(hidden)):

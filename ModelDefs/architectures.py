@@ -3,6 +3,7 @@ import math
 import torch
 import torch.nn.functional as F
 import torch.nn.init as init
+from torch.utils.checkpoint import checkpoint_sequential
 # Architectures
 
 # TODO: Fix batch norm issue
@@ -22,7 +23,7 @@ class ModelArchitecture(nn.Module):
     def forward(self, x):
         raise NotImplementedError
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         raise NotImplementedError
 
     def get_jacobian(self, x, y):
@@ -42,7 +43,7 @@ class Linear(ModelArchitecture):
     def forward(self, x):
         return self.sequential(x)
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         return None, self.forward(x)
 
 
@@ -152,7 +153,7 @@ class Flat(ModelArchitecture):
         # TODO vectorize inputs
         return self.sequential(x)
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         x = x.view(x.size(0), -1)
 
@@ -224,7 +225,7 @@ class CNN(ModelArchitecture):
         hT = self.convSequential(x)
         return self.linSequential(hT.view(-1, hT.shape[1] * hT.shape[2] * hT.shape[3]))
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         convHidden = [None] * self.numConvLayers
         if self.bn:
@@ -263,7 +264,7 @@ class CNN_Flat(CNN):
         hT = self.convSequential(x)
         return self.linSequential(self.flat(hT.view(-1, hT.shape[1] * hT.shape[2] * hT.shape[3])))
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         convHidden = [None] * self.numConvLayers
         if self.bn:
@@ -297,8 +298,6 @@ class CNN_Flat(CNN):
 
 
 "ResNet vibes"
-
-
 def _weights_init(m):
     if isinstance(m, nn.Linear) or isinstance(m, nn.Conv2d):
         init.kaiming_normal_(m.weight)
@@ -348,18 +347,23 @@ class BasicBlock(nn.Module):
 
 
 class ResNet(ModelArchitecture):
-    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4):
+    def __init__(self, block, num_blocks, num_classes=10, cuda=False, n_filters=4, cp=True, nchunks=1):
         super(ResNet, self).__init__(cuda=cuda)
         self.in_planes = n_filters
+        self.layer0 = nn.Sequential(nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True),
+                                    nn.BatchNorm2d(n_filters),nn.ReLU())
 
-        self.conv1 = nn.Conv2d(3, n_filters, kernel_size=3, stride=1, padding=1, bias=True)
-        self.bn1 = nn.BatchNorm2d(n_filters)
         self.layer1 = self._make_layer(block, n_filters, num_blocks[0], stride=1)
         self.layer2 = self._make_layer(block, 2 * n_filters, num_blocks[1], stride=2)
         self.layer3 = self._make_layer(block, 4 * n_filters, num_blocks[2], stride=2)
         self.linear = nn.Linear(int(64 / (16 / n_filters)), num_classes)
-
+        self.numHiddenLayers = 3
         self.apply(_weights_init)
+        self.cp = cp
+        if self.cp:
+            self.checkpoint = lambda f, inpt, **kv: checkpoint_sequential(f, nchunks, inpt, **kv)
+        else:
+            self.checkpoint = lambda f, inpt, **kv: f(inpt, **kv)
 
     def _make_layer(self, block, planes, num_blocks, stride):
         strides = [stride] + [1]*(num_blocks-1)
@@ -371,29 +375,42 @@ class ResNet(ModelArchitecture):
         return nn.Sequential(*layers)
 
     def forward(self, x):
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
-        out = self.layer2(out)
-        out = self.layer3(out)
+        # import pdb; pdb.set_trace()
+        x.requires_grad_(True) if self.cp else None  # in place mutation to avoid copying
+        cp = self.checkpoint
+
+        out = cp(self.layer0, x)
+        out = cp(self.layer1, out)
+        out = cp(self.layer2, out)
+        out = cp(self.layer3, out)
         out = F.avg_pool2d(out, out.size()[3])
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return out
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hiddens = []
-        # First block
-        out = F.relu(self.bn1(self.conv1(x)))
-        out = self.layer1(out)
-        hiddens.append(out.view(out.size(0), -1))
+        # import pdb; pdb.set_trace()
 
-        # Second block
-        out = self.layer2(out)
-        hiddens.append(out.view(out.size(0), -1))
+        x.requires_grad_(True) if self.cp else None  # in place mutation to avoid copying
+        cp = self.checkpoint
 
-        # Third block
-        out = self.layer3(out)
-        hiddens.append(out.view(out.size(0), -1))
+        if only_last:
+            out = cp(torch.nn.Sequential(*[self.layer0, self.layer1, self.layer2, self.layer3]), x)
+            hiddens.append(out.view(out.size(0), -1))
+        else:
+            # First block
+            out = cp(self.layer0, x)
+            out = cp(self.layer1, out)
+            hiddens.append(out.view(out.size(0), -1))
+
+            # Second block
+            out = cp(self.layer2, out)
+            hiddens.append(out.view(out.size(0), -1))
+
+            # Third block
+            out = cp(self.layer3, out)
+            hiddens.append(out.view(out.size(0), -1))
 
         # Read out
         out = F.avg_pool2d(out, out.size()[3])
@@ -402,5 +419,91 @@ class ResNet(ModelArchitecture):
         return hiddens, out
 
 
-def resnet20(cuda=False, n_filters=4):
-    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters)
+def resnet20(cuda=False, n_filters=4, cp=True, nchunks=1):
+    return ResNet(BasicBlock, [3, 3, 3], cuda=cuda, n_filters=n_filters, cp=cp, nchunks=nchunks)
+
+
+
+"VGG vibes"
+import math
+import torch.nn as nn
+import torch.nn.init as init
+
+
+class VGG(ModelArchitecture):
+    '''
+    VGG model
+    '''
+    def __init__(self, features, cuda=False, dropout=True):
+        super(VGG, self).__init__(cuda=cuda)
+        self.features = features
+        if dropout:
+            self.classifier = nn.Sequential(
+                nn.Dropout(),
+                nn.Linear(2048, 512),
+                nn.ReLU(True),
+                nn.Dropout(),
+                nn.Linear(512, 512),
+                nn.ReLU(True),
+                nn.Linear(512, 10),
+            )
+        else:
+            self.classifier = nn.Sequential(
+                nn.Linear(2048, 512),
+                nn.ReLU(True),
+                nn.Linear(512, 512),
+                nn.ReLU(True),
+                nn.Linear(512, 10),
+            )
+        self.numHiddenLayers = 1
+        # Initialize weights
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d):
+                n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+                m.weight.data.normal_(0, math.sqrt(2. / n))
+                m.bias.data.zero_()
+
+    def forward(self, x):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
+
+    def bothOutputs(self, x, only_last=False):
+        x = self.features(x)
+        x = x.view(x.size(0), -1)
+        hiddens = [x]
+        x = self.classifier(x)
+        return hiddens, x
+
+
+def make_layers(cfg, batch_norm=False):
+    layers = []
+    in_channels = 3
+    for v in cfg:
+        if v == 'M':
+            layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
+        else:
+            conv2d = nn.Conv2d(in_channels, v, kernel_size=3, padding=1)
+            if batch_norm:
+                layers += [conv2d, nn.BatchNorm2d(v), nn.ReLU(inplace=True)]
+            else:
+                layers += [conv2d, nn.ReLU(inplace=True)]
+            in_channels = v
+    return nn.Sequential(*layers)
+
+
+cfg = {
+    'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M'],
+    'B': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512],
+}
+
+
+def vgg9(cuda=False, dropout=False):
+    """VGG 9-layer model (configuration "A")"""
+    return VGG(make_layers(cfg['B']), cuda=cuda, dropout=dropout)
+
+
+def vgg11(cuda=False, dropout=False):
+    """VGG 11-layer model (configuration "B")"""
+    return VGG(make_layers(cfg['B']), cuda=cuda, dropout=dropout)

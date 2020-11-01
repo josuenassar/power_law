@@ -52,8 +52,18 @@ class AdversarialTraining(BatchModifier):
         losses = torch.zeros(self.noRestarts)
         xs = []
         for r in range(self.noRestarts):
-            perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-            xT, ellT = self.pgd(x_nat, torch.clamp(x_nat + perturb, 0, 1), y)  # do pgd
+            with torch.no_grad():
+                if r == 0:
+                    perturb = 0
+                else:
+                    perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
+                x_start = x_nat + perturb
+                if x_nat.shape[1] == 1:
+                    x_start = torch.clamp(x_start, self.lb, self.ub)
+                else:
+                    for d in range(len(self.lb)):
+                        x_start[:, d, :, :] = torch.clamp(x_start[:, d, :, :], self.lb[d], self.ub[d])
+            xT, ellT = self.pgd(x_nat, x_start, y)  # do pgd
             xs.append(xT)
             losses[r] = ellT
         idx = torch.argmax(losses)
@@ -71,21 +81,33 @@ class AdversarialTraining(BatchModifier):
         """
         for i in range(self.gradSteps):
             jacobian, ell = self.get_jacobian(x, y)  # get jacobian
-            xT = (x + self.lr * torch.sign(jacobian)).detach()
-            xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
-            xT = torch.clamp(xT, self.lb, self.ub)
-            x = xT
-            del xT
-        ell = self.loss(self._architecture(x), y)
+            with torch.no_grad():
+                xT = (x + self.lr * torch.sign(jacobian)).detach()
+                xT = self.clip(xT, x_nat.detach() - self.eps, x_nat.detach() + self.eps)
+                if x_nat.shape[1] == 1:
+                    # if just one channel, then lb and ub are just numbers
+                    xT = torch.clamp(xT, self.lb, self.ub)
+                else:
+                    # for more than one channel, need channel specific lb and ub
+                    for d in range(len(self.lb)):
+                        xT[:, d, :, :] = torch.clamp(xT[:, d, :, :], self.lb[d], self.ub[d])
+                x = xT
+        with torch.no_grad():
+            ell = self.loss(self._architecture(x), y)
         return x, ell.item()
 
     def FGSM(self, x_nat, y):
-        perturb = 2 * self.eps * torch.rand(x_nat.shape, device=x_nat.device) - self.eps
-        jacobian, ell = self.get_jacobian(torch.clamp(x_nat + perturb, 0, 1), y)  # get jacobian
+        jacobian, ell = self.get_jacobian(x_nat, y)  # get jacobian
         x_nat = x_nat.detach()
-        x_adv = torch.clamp(x_nat + self.eps * torch.sign(jacobian), 0, 1).detach()
-        return x_adv, ell
-
+        with torch.no_grad():
+            x_nat = x_nat + self.eps * torch.sign(jacobian)
+            if x_nat.shape[1] == 1:
+                # if just one channel, then lb and ub are just numbers
+                x_nat = torch.clamp(x_nat, self.lb, self.ub)
+            else:
+                for d in range(len(self.lb)):
+                    x_nat[:, d, :, :] = torch.clamp(x_nat[:, d, :, :], self.lb[d], self.ub[d])
+            return x_nat, ell
 
     @staticmethod
     def clip(T, Tmin, Tmax):
