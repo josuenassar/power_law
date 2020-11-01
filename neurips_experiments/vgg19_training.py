@@ -27,7 +27,7 @@ if torch.cuda.is_available():
 if __name__ == '__main__':
     kwargs = {"dims": [],
               "activation": 'relu',
-              "architecture": 'vgg19',
+              "architecture": 'vgg16',
               "trainer": "vanilla",
               "regularizer": "no",
               'alpha_jacob': 1e-4,
@@ -74,4 +74,4 @@ if __name__ == '__main__':
     for idx in range(len(models)):
         model_params.append((kwargs, models[idx].state_dict()))
 
-    torch.save(model_params, 'vgg19_no_aug')
+    torch.save(model_params, 'vgg16_no_aug')
