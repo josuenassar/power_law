@@ -496,6 +496,8 @@ def make_layers(cfg, batch_norm=False):
 cfg = {
     'A': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M'],
     'B': [64, 'M', 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512],
+    'C': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M',
+          512, 512, 512, 512]
 }
 
 
@@ -507,3 +509,8 @@ def vgg9(cuda=False, dropout=False):
 def vgg11(cuda=False, dropout=False):
     """VGG 11-layer model (configuration "B")"""
     return VGG(make_layers(cfg['B']), cuda=cuda, dropout=dropout)
+
+
+def vgg19(cuda=False, dropout=False):
+    """VGG 11-layer model (configuration "B")"""
+    return VGG(make_layers(cfg['C']), cuda=cuda, dropout=dropout)
