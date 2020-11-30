@@ -16,3 +16,30 @@ where \tau is a cut-off that dictates which eigenvalues should be regularized an
 # Running Experiments
 
 In `neurips_experiments/`, `experiment_1.py`, `experiment_2.py` and `experiment_3.py` correspond to the experiments ran in sections 4.1, 4.2 and 4.3 respectively.
+
+## Experiment 1
+The vanilla networks can be trained by calling `neurips_experiments/experiment_1.py --vanilla=True`. 
+
+The spectrally regularized networks can be trained by calling `neurips_experiments/experiment_1.py --vanilla=False`. 
+
+Note that the networks can be trained on the GPU by passing in `--cuda=True`.
+
+## Experiment 2
+The vanilla MLPs can be trained by calling `neurips_experiments/experiment_2.py --vanilla=True --arch="mlp" `.
+
+The MLPs with whitened intermediate representations (denoted as Vanilla-Wh in section 4.2) can be trained by calling `neurips_experiments/experiment_2.py --vanilla=True --arch="mlp" --flat=True`.
+
+The MLPs where only the last hidden layer is spectrally regularized (denoted as SpecReg in section 4.2) can be trained by calling `neurips_experiments/experiment_2.py --vanilla=False --arch="mlp" `.
+
+The MLPs where only the last hidden layer is spectrally regularized and the intermediate representation is whitend (denoted as SpecReg-Wh in section 4.2) can be trained by calling `neurips_experiments/experiment_2.py --vanilla=False --arch="mlp" --flat=True `.
+
+(Note that to repeat these same experiments on CNNs pass in `--arch="cnn"` instead. Also, networks can be trained on the GPU by passing in `--cuda=True`.)
+
+## Experiment 3
+The vanilla MLPs can be trained by calling `neurips_experiments/experiment_3.py --vanilla=True --arch="mlp" `.
+
+The MLPs where every hidden layer is spectrally regularized (denoted as SpecReg in section 4.3) can be trained by calling `neurips_experiments/experiment_3.py --vanilla=False --arch="mlp" `.
+
+The MLPs whose input-output Jacobian is regularized (denoted as Jac in section 4.3) can be trained by calling `neurips_experiments/experiment_3.py --vanilla=True --arch="mlp" --jac=True`.
+
+(Note that to repeat these same experiments on CNNs pass in `--arch="cnn"` instead. Also, networks can be trained on the GPU by passing in `--cuda=True`.)
