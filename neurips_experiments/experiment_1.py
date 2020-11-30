@@ -6,21 +6,11 @@ sys.path.append('..')
 from ModelDefs.models import ModelFactory
 from DataDefs.data import get_data
 import torch
-import numpy as np
 import os
-from joblib import Parallel, delayed
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def train(model, batch_size, num_epochs, X_full):
-    train_loader, _, _ = get_data(dataset='MNIST', batch_size=batch_size, _seed=np.random.randint(100),
-                                                      validate=False, data_dir='')
-    for epoch in tqdm(range(num_epochs)):
-        model.train_epoch(train_loader, X_full)
-    return model
-
-
-def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=False, vanilla=False, lr=1e-3):
+def train_network(tau=0, activation='tanh', cuda=False, num_epochs=50, vanilla=False, lr=1e-3):
     """
     Runs a single layer MLP  with 2,000 hidden units on MNIST. The user can specify at what point in the eigenvalue
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
@@ -97,18 +87,9 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
             kwargs['slope'] = slope
             kwargs['alpha_spectra'] = reg_strength
             models = [ModelFactory(**kwargs) for j in range(realizations)]
-            if not parallel:
-                print('no vibes')
-                for j in range(realizations):
-                    for epoch in tqdm(range(num_epochs)):
-                        models[j].train_epoch(train_loader, X_full)
-            else:
-                print('vibes')
-                del full_loader
-                models = Parallel(n_jobs=realizations)(delayed(train)(models[j],
-                                                                      batch_size,
-                                                                      num_epochs,
-                                                                      X_full) for j in range(realizations))
+            for j in range(realizations):
+                for epoch in tqdm(range(num_epochs)):
+                    models[j].train_epoch(train_loader, X_full)
 
             model_params = []
             for idx in range(len(models)):
@@ -120,4 +101,4 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
 
 
 if __name__ == '__main__':
-    fire.Fire(bad_boy_vibes)
+    fire.Fire(train_network)

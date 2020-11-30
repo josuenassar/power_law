@@ -9,7 +9,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, jac=False, dataset='CIFAR10',
+def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, jac=False, dataset='CIFAR10',
             arch='cnn',
             realizations=3):
     lr = 1e-4
@@ -123,4 +123,4 @@ def bad_boy(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False
 
 
 if __name__ == '__main__':
-    fire.Fire(bad_boy)
+    fire.Fire(train_network)
