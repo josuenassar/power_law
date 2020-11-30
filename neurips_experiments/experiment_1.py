@@ -10,7 +10,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def train_network(tau=0, activation='tanh', cuda=False, num_epochs=50, vanilla=False, lr=1e-3):
+def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=False, lr=1e-3):
     """
     Runs a single layer MLP  with 2,000 hidden units on MNIST. The user can specify at what point in the eigenvalue
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
