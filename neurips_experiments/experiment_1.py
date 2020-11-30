@@ -7,7 +7,6 @@ from ModelDefs.models import ModelFactory
 from DataDefs.data import get_data
 import torch
 import numpy as np
-import copy
 import os
 from joblib import Parallel, delayed
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
