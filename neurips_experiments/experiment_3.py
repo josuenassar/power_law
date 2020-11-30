@@ -11,6 +11,18 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, jac=False, dataset='MNIST',
                   arch='cnn', realizations=3):
+    """
+    Training script for running experiments for section 4.2 in paper.
+    :param tau: integer, at what point in the eigenvalue spectrum should we regularize
+    :param activation: string, what activation function to use (only choices are tanh and relu)
+    :param cuda: boolean, flag indicating whether to use GPU or not
+    :param num_epochs: integer, number of epochs to train model for
+    :param vanilla: boolean, flag indicating whether to use spectral regularizer (False) or not (True)
+    :param jac: boolean, indicating whether to use jacobian regularization (True) or not (False)
+    :param dataset: string, which dataset to use (choices are MNIST or CIFAR10)
+    :param arch: string, whether to use an MLP ('mlp') or a CNN ('cnn')
+    :param realizations: integer, number of random seeds to use
+    """
     lr = 1e-4
     if arch == 'mlp':
         dims = [(28 * 28, 1_000), (1_000, 1_000), (1_000, 1_000), (1_000, 10)]

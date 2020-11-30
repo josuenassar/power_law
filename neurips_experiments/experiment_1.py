@@ -16,6 +16,11 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
     lr=0.001, number of realizations=3, regularization strengths=[0.1, 1, 5], slope values=[1.06, 1.04, 1.02, 1.00].
     :param tau: integer, at what point in the eigenvalue spectrum should we regularize
+    :param activation: string, what activation function to use (only choices are tanh and relu)
+    :param cuda: boolean, flag indicating whether to use GPU or not
+    :param num_epochs: integer, number of epochs to train model for
+    :param vanilla: boolean, flag indicating whether to use spectral regularizer or not
+    :param lr: float, learning rate to use
     """
     realizations = 3
     batch_size = 3500  # 1.25 times the widest layer in the network

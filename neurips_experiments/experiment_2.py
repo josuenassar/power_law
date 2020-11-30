@@ -9,7 +9,7 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='MNIST', arch='cnn',
+def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='MNIST', arch='mlp',
                   realizations=3, flat=False):
     """
     Training script for running experiments for section 4.2 in paper.
@@ -25,7 +25,7 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla
     lr = 1e-4
     if arch == 'mlp':
         if flat:
-            arch = 'flat'
+            arch = 'mlp_flat'
         dims = [(28 * 28, 1_000), (1_000, 1_000), (1_000, 1_000), (1_000, 10)]
         batch_size = 1500
         dataset = 'MNIST'
