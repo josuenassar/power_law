@@ -9,8 +9,8 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='CIFAR10', arch='cnn',
-            realizations=3):
+def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, dataset='MNIST', arch='cnn',
+                  realizations=3):
     lr = 1e-4
     if arch == 'mlp':
         dims = [(28 * 28, 1_000), (1_000, 1_000), (1_000, 1_000), (1_000, 10)]
