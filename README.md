@@ -8,5 +8,11 @@ A recent finding by Stringer et al. 2019 found that eigenspectrum of the empiric
 
 # Spectrally regularized Deep Neural Networks
 In general, the distribution of eigenvalues of a deep neural network is intractable and a priori there is no reason to believe it should follow a power law. To enforce a <a href="https://www.codecogs.com/eqnedit.php?latex=n^{-1}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?n^{-1}" title="n^{-1}" /></a> eigenspectrum, we directly regularize the eigenvalues of the activations at layer l, denoted by <a href="https://www.codecogs.com/eqnedit.php?latex=\lambda_n^l" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\lambda_n^l" title="\lambda_n^l" /></a>, towards a desired eigenspectrum, denoted by <a href="https://www.codecogs.com/eqnedit.php?latex=\gamma^l" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\gamma^l" title="\gamma^l" /></a>, which follows a <a href="https://www.codecogs.com/eqnedit.php?latex=n^{-1}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?n^{-1}" title="n^{-1}" /></a> power-law:
+
 <a href="https://www.codecogs.com/eqnedit.php?latex=\frac{\beta}{N_l}\sum_{n&space;\geq&space;\tau}^{N_l}\left(&space;(\lambda_n^l&space;/&space;\gamma_n^l&space;-&space;1)^2&space;&plus;&space;\max(0,&space;\lambda_n^l/\gamma_n^l&space;-&space;1)&space;\right&space;)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\frac{\beta}{N_l}\sum_{n&space;\geq&space;\tau}^{N_l}\left(&space;(\lambda_n^l&space;/&space;\gamma_n^l&space;-&space;1)^2&space;&plus;&space;\max(0,&space;\lambda_n^l/\gamma_n^l&space;-&space;1)&space;\right&space;)" title="\frac{\beta}{N_l}\sum_{n \geq \tau}^{N_l}\left( (\lambda_n^l / \gamma_n^l - 1)^2 + \max(0, \lambda_n^l/\gamma_n^l - 1) \right )" /></a>
+
 where \tau is a cut-off that dictates which eigenvalues should be regularized and \beta is a hyperparameter that controls the strength of the regularizer.
+
+# Running Experiments
+
+In `neurips_experiments/`, `experiment_1.py`, `experiment_2.py` and `experiment_3.py` correspond to the experiments ran in sections 4.1, 4.2 and 4.3 respectively.
