@@ -78,7 +78,7 @@ def bad_boy_vibes(tau=0, activation='tanh', cuda=False, num_epochs=50, parallel=
                   "trainer": "vanilla",
                   "regularizer": "eig",
                   'alpha_jacob': 1e-4,
-                  'bn': False,
+                  'bn': False,  # Note that for results shown in section 4.1, we set bn=True
                   'alpha_spectra': 1,
                   'optimizer': 'adam',
                   'lr': lr,
