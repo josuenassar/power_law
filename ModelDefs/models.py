@@ -26,7 +26,7 @@ def filter_n_eval(func, **kwargs):
 def ModelFactory(**kwargs):
     classes = {'mlp': MLP,
                'cnn': CNN,
-               'flat': Flat,
+               'mlp_flat': Flat,
                'cnn_flat': CNN_Flat,
                'resnet': resnet20,
                'vgg9': vgg9,
