@@ -10,7 +10,7 @@ os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
 def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla=False, jac=False, dataset='MNIST',
-                  arch='cnn', realizations=3):
+                  arch='cnn', realizations=3, save_dir='experiment_3/'):
     """
     Training script for running experiments for section 4.2 in paper.
     :param tau: integer, at what point in the eigenvalue spectrum should we regularize
@@ -22,6 +22,7 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla
     :param dataset: string, which dataset to use (choices are MNIST or CIFAR10)
     :param arch: string, whether to use an MLP ('mlp') or a CNN ('cnn')
     :param realizations: integer, number of random seeds to use
+    :param save_dir: string, location where to save models
     """
     lr = 1e-4
     if arch == 'mlp':
@@ -80,11 +81,11 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla
             model_params.append((kwargs, models[idx].state_dict()))
         if jac:
             torch.save(model_params,
-                       'experiment_3/' + dataset + '/jac_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
+                       save_dir + dataset + '/jac_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
                            num_epochs))
         else:
             torch.save(model_params,
-                       'experiment_3/' + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
+                       save_dir + dataset + '/vanilla_arch=' + arch + '_activation=' + activation + '_epochs=' + str(num_epochs))
     else:
         regularizers_strengths = [.01, .1, 2]
         # In[]
@@ -127,7 +128,7 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=100, vanilla
             for idx in range(len(models)):
                 model_params.append((kwargs, models[idx].state_dict()))
 
-            torch.save(model_params, 'experiment_3/' + dataset + '/tau=' + str(tau) + '_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
+            torch.save(model_params, save_dir + dataset + '/tau=' + str(tau) + '_arch=' + arch + '_activation=' + activation + '_epochs=' + str(
                 num_epochs) + '_alpha=' + str(1) + '_beta=' + str(reg_strength))
             counter += 1
             print(str(len(regularizers_strengths) - counter) + " combos left")

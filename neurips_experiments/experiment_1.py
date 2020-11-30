@@ -10,7 +10,8 @@ import os
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
 
 
-def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=False, lr=1e-3):
+def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=False, lr=1e-3,
+                  save_dir='experiment_1/'):
     """
     Runs a single layer MLP  with 2,000 hidden units on MNIST. The user can specify at what point in the eigenvalue
     spectrum should the regularizer start aka tau. The other parameters of the experiment are fixed: batch_size=2500,
@@ -21,6 +22,7 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=
     :param num_epochs: integer, number of epochs to train model for
     :param vanilla: boolean, flag indicating whether to use spectral regularizer or not
     :param lr: float, learning rate to use
+    :param save_dir: string, location where to save models
     """
     realizations = 3
     batch_size = 3500  # 1.25 times the widest layer in the network
@@ -56,7 +58,7 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=
             model_params.append((kwargs, models[idx].state_dict()))
 
         torch.save(model_params,
-                   'experiment_1/vanilla' + '_activation=' + activation + '_epochs=' + str(num_epochs))
+                   save_dir + 'vanilla' + '_activation=' + activation + '_epochs=' + str(num_epochs))
 
     else:
         slopes = [1.00]
@@ -100,7 +102,8 @@ def train_network(tau=10, activation='tanh', cuda=False, num_epochs=50, vanilla=
             for idx in range(len(models)):
                 model_params.append((kwargs, models[idx].state_dict()))
 
-            torch.save(model_params, 'experiment_1/tau=' + str(tau) + '_activation=' + activation + '_epochs=' + str(num_epochs) + '_alpha=' + str(slope) + '_beta=' + str(reg_strength))
+            torch.save(model_params,
+                       save_dir + 'tau=' + str(tau) + '_activation=' + activation + '_epochs=' + str(num_epochs) + '_alpha=' + str(slope) + '_beta=' + str(reg_strength))
             counter += 1
             print(str(len(slopes) * len(regularizers_strengths) - counter) + " combos left")
 
