@@ -3,7 +3,7 @@ This is the accompanying repository for our NeurIPS 2020 paper titled "On 1/n ne
 
 # Background
 
-A recent finding by Stringer et al. 2019 found that eigenspectrum of the empirical covariance matrix of the neural activity in mouse V1 followed a power-law, i.e. 
+A recent finding by Stringer et al. 2019 found that the eigenspectrum of the empirical covariance matrix of the neural activity in mouse V1 followed a power-law, i.e. 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\lambda_n&space;\propto&space;n^{-\alpha}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\lambda_n&space;\propto&space;n^{-\alpha}" title="\lambda_n \propto n^{-\alpha}" /></a> regardless of the input statistics, where for natural images a universal exponent of <a href="https://www.codecogs.com/eqnedit.php?latex=\alpha&space;\approx&space;1" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\alpha&space;\approx&space;1" title="\alpha \approx 1" /></a> was observed. A corresponding theory was put forward as a potential rationale for the existence of a <a href="https://www.codecogs.com/eqnedit.php?latex=n^{-1}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?n^{-1}" title="n^{-1}" /></a> eigenspectrum. While the theory was illuminating, the advantages of a representation with eigenspectrum decaying slightly faster than <a href="https://www.codecogs.com/eqnedit.php?latex=n^{-1}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?n^{-1}" title="n^{-1}" /></a> is not apparent. To investigate further, we turn to deep neural networks as a testbed.
 
 # Spectrally regularized Deep Neural Networks
