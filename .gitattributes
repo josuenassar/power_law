@@ -1,0 +1,2 @@
+pretrained_models/vgg16_no_aug filter=lfs diff=lfs merge=lfs -text
+pretrained_models/vgg16_no_aug_fine_tune filter=lfs diff=lfs merge=lfs -text
