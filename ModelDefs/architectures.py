@@ -79,7 +79,7 @@ class MLP(ModelArchitecture):
         # TODO vectorize inputs
         return self.sequential(x)
 
-    def bothOutputs(self, x):
+    def bothOutputs(self, x, only_last=False):
         hidden = [None] * self.numHiddenLayers
         x = x.view(x.size(0), -1)
         if self.bn:
